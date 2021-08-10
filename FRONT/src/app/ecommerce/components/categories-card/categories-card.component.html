@@ -1,0 +1,15 @@
+<!-- Side Bar Start -->
+<div class="sidebar">
+    <div class="sidebar-widget category">
+        <h2 class="title">Categorias</h2>
+        <hr class="bg-info">
+        <nav class="navbar bg-light">
+            <ul class="navbar-nav" *ngFor="let category of categories; let i = index;">
+                <li class="nav-item">
+                    <a class="nav-link" routerLink="/categorias/{{categories[i].content}}">{{categories[i].content.charAt(0).toUpperCase()+categories[i].content.slice(1)}}</a>
+                </li>
+                
+            </ul>
+        </nav>
+    </div>
+</div>

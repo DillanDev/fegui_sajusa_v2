@@ -1,0 +1,50 @@
+* {
+    padding: 0px;
+    margin: 0px;
+    box-sizing: border-box;
+    font-family: Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+#container-main {
+    margin-top: 13.7%;
+    max-width: 90%;
+    height: 60vh;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    padding: 8%;
+}
+
+.nosotros{
+    height: 40vh;
+    width: 50%;
+    padding: 2%;
+    border: 2px solid #707070;
+    margin-left: 5%;
+text-align: center;
+line-height: 230%;
+}
+
+.nosotros h2{
+    color: #BA324F;
+}
+
+.nosotros span{
+
+    font-size: 100%;
+    color: black;
+}
+
+@media screen and (max-width:1100px) {
+    .nosotros{
+        text-align:justify;
+        overflow-y: scroll;
+
+    }
+    
+
+    .nosotros span{
+
+        font-size: 100%;
+    }
+}

@@ -1,0 +1,35 @@
+
+.contact-d{
+    background-color: #f8f8f8 ;
+}
+
+a {
+    color: #4BA3C3;
+    text-decoration: none;
+}
+  
+  
+  a:hover,
+  a:active,
+  a:focus {
+    color: #BA324F;
+    outline: none;
+    text-decoration: none;
+  }
+  
+  
+
+/**********************************/
+/****** Register & Login CSS ******/
+/**********************************/
+.login {
+    position: relative;
+    padding-top: 30px;
+}
+
+.login .login-form,
+.login .register-form {
+    padding: 30px;
+    background: #ffffff;
+    margin-bottom: 30px;
+}

@@ -1,0 +1,82 @@
+<div class="container pt-4">
+  <div class="section-1 row">
+    <div class="col-lg-12">
+      <div class="row d-flex justify-content-between" id="section">
+        <div class="col-8 pt-3  pb-3" id="slider">
+          <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+              <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active"
+                aria-current="true" aria-label="Slide 1"></button>
+              <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1"
+                aria-label="Slide 2"></button>
+            </div>
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <img src="../../../../assets/img/home/MEDICINA.PNG" class="d-block w-100" alt="...">
+                <div class="carousel-caption d-none d-md-block">
+                  <!-- <h5>First slide label</h5> -->
+                  <p>Nuestro compromiso es el cuidado de la salud, de una manera impecable.</p>
+                </div>
+              </div>
+              <div class="carousel-item">
+                <img src="../../../../assets/img/home/medico.jpg" class="d-block w-100" alt="...">
+                <div class="carousel-caption d-none d-md-block">
+                  <!-- <h5>Second slide label</h5> -->
+                  <p>Con visión de ofrecer una ayuda útil y práctica.</p>
+                </div>
+              </div>
+
+            </div>
+            <button class="carousel-control-prev " type="button" data-bs-target="#carouselExampleCaptions"
+              data-bs-slide="prev">
+              <span class="carousel-control-prev-icon bg-info" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions"
+              data-bs-slide="next">
+              <span class="carousel-control-next-icon bg-info" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </button>
+          </div>
+        </div>
+        <div class="col-3 pt-3  pb-3" id="card">
+          <div class="card">
+            <img src="../../../../assets/img/home/MEDICINA.PNG" class="card-img-top" alt="...">
+            <div class="card-body">
+              <h5 class="card-title">{{title}}</h5>
+              <p class="card-text">{{content}}</p>
+              <a href="#" class="btn btn-primary">Ver más</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<app-slider-products></app-slider-products>
+
+
+<div class="section-header">
+  <div id="services-card">
+    <!--   Tarjetas-->
+    <div class="title-cards">
+      <h2>Nuestros Servicios</h2>
+    </div>
+    <div class="container-card ">
+      <div class="card-1" *ngFor="let service of main(); let i = index;">
+        <figure>
+          <img src="{{Services[i].img}}">
+        </figure>
+        <div class="contenido-card">
+          <h3>{{Services[i].titleService}}</h3>
+          <p>{{Services[i].contentService}}</p>
+        </div>
+      </div>
+    </div>
+    <!--Fin   Tarjetas-->
+  </div>
+
+</div>

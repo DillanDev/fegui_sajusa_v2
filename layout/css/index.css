@@ -1,0 +1,311 @@
+* {
+    padding: 0px;
+    margin: 0px;
+    box-sizing: border-box;
+    font-family: Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+#container-main {
+    margin-top: 13.8%;
+    max-width: 100%;
+    height: 180vh;
+    background-color: #E6E6E6;
+
+}
+
+#pArticle {
+
+    height: 365px;
+    max-width: 100%;
+}
+
+#article {
+    transform: translate(0%, -80%);
+    height: 301px;
+    max-width: 192px;
+    margin-left: 70%;
+    background-color: rgb(61, 113, 139);
+}
+
+#svg-medico {
+    width: 100%;
+    height: 100%;
+}
+
+#container-presentation {
+
+    transform: translate(30%, 10%);
+    height: 268px;
+    max-width: 48%;
+    margin-left: 7%;
+    background-image: -webkit-linear-gradient(top, rgba(23, 86, 118, 0.705), rgba(23, 86, 118, 0.705)), url('../img/medico.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    text-align: center;
+    line-height: 200%;
+    font-size: 24px;
+    color: rgba(204, 230, 244);
+
+}
+
+#container-presentation span {
+    position: relative;
+    top: 25%;
+
+}
+
+/*Slider de productos*/
+#slider {
+    height: 343px;
+    max-width: 100%;
+    background-color: rgba(23, 86, 118);
+    box-shadow: 1px 1px 5px black;
+
+}
+
+#slider h2 {
+    margin-left: 20px;
+    font-size: 20px;
+    color: rgba(204, 230, 244);
+}
+
+#slider-container {
+    height: 90%;
+}
+
+.article {
+
+    list-style: none;
+    margin-left: 6%;
+    float: left;
+    width: 238px;
+    height: 280px;
+    border-radius: 5%;
+    position: relative;
+    top: -60px;
+    left: 160px;
+    background-color: rgba(255, 255, 255);
+    font-size: 12px;
+    text-align: center;
+}
+
+.article>img {
+    max-width: 100%;
+    max-height: 100%;
+
+}
+
+#derecha>#svg-derecha {
+
+
+    height: 30px;
+    position: relative;
+    left: 85%;
+    top: 120px;
+    fill: rgba(204, 230, 244);
+    cursor: pointer;
+
+}
+
+#izquierda>#svg-izquierda {
+    cursor: pointer;
+    height: 30px;
+    position: relative;
+    left: 13%;
+    top: 90px;
+    fill: rgba(204, 230, 244);
+
+}
+
+/*Servicios*/
+
+#services {
+    height: 26%;
+    width: 100%;
+    margin-top: 2.5%;
+    background-color: rgba(237, 242, 244);
+    
+
+}
+
+
+#services h2 {
+    
+    color: rgba(5, 35, 51);
+    
+}
+
+.consult-img{
+    height: 35%;
+    width: 35%;
+    border-radius: 999%;
+    fill: #175676;
+    position: relative;
+    left: 33%;
+}
+
+#services>.items {
+    float: left;
+    position: relative;
+    left: 10%;
+    top: -11%;
+    margin-top: 20px;
+    margin-left: 6%;
+    height: 90%;
+    width: 20%;
+    border-radius: 5%;
+    background-color: rgba(255, 255, 255);
+    box-shadow: 1px 1px 5px black;
+
+
+}
+
+#services>.items>h3 {
+    text-align: center;
+    color: rgba(15, 17, 17);
+}
+
+.items  >p{
+    margin: 20px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.items>p>a{
+    color: brown;
+}
+@media screen and (max-width:900px) {
+    .items  >p{
+        font-size: 10px;
+    }
+
+    #container-main {
+        height: 150vh;
+    
+    }
+
+
+  
+
+    #container-main {
+        margin-top: 8.2%;
+    }
+
+
+    #article {
+        transform: translate(0%, 0%);
+        height: 40%;
+        max-width: 20%;
+        margin-left: 70%;
+
+    }
+
+    #container-presentation {
+
+        transform: translate(30%, 100%);
+        height: 40%;
+        max-width: 48%;
+        margin-left: 0%;
+
+        font-size: 10px;
+
+
+    }
+
+    /*Slider de productos*/
+    #slider {
+        height: 171.5px;
+        max-width: 100%;
+        background-color: rgba(23, 86, 118);
+        box-shadow: 1px 1px 5px black;
+
+    }
+
+    #slider h2 {
+        margin-left: 10px;
+        font-size: 10px;
+        color: rgba(204, 230, 244);
+    }
+
+    #slider-container {
+        height: 90%;
+    }
+
+    .article {
+
+        list-style: none;
+        margin-left: 6%;
+        float: left;
+        width: 20%;
+        height: 30%;
+        top: -35px;
+        left: 40px;
+        font-size: 8px;
+    }
+
+    .article>img {
+        max-width: 100%;
+        max-height: 100%;
+
+    }
+
+    #derecha>#svg-derecha {
+
+
+        height: 15px;
+        position: relative;
+        left: 85%;
+        top: 60px;
+        fill: rgba(204, 230, 244);
+        cursor: pointer;
+
+    }
+
+    #izquierda>#svg-izquierda {
+        cursor: pointer;
+        height: 15px;
+        position: relative;
+        left: 13%;
+        top: 45px;
+        fill: rgba(204, 230, 244);
+
+    }
+
+    #services {
+
+        height: 14%;
+        width: 100%;
+        margin-top: 2.5%;
+
+    }
+
+    #services>h2 {
+        font-size: 14px;
+        position: relative;
+        left: -25%;
+
+    }
+
+    #services>.items{
+        
+        float: left;
+        position: relative;
+        left: 5%;
+        top: -5.5%;
+        margin-top: 10px;
+        margin-left: 3%;
+        height: 90%;
+        width: 20%;
+        border-radius: 5%;
+        background-color: rgba(255, 255, 255);
+        box-shadow: 1px 1px 5px black;
+    
+    }
+
+    #services>.items>h3 {
+        font-size: 9px;
+
+
+    }
+}

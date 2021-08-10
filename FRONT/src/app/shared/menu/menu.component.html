@@ -1,0 +1,82 @@
+<div class="menu">
+
+<!-- Bottom Bar Start -->
+<div class="bottom-bar">
+  <div class="container-fluid">
+    <div class="row align-items-center">
+      <div class="col-md-3">
+        <div class="logo">
+          <a routerLink="inicio">
+            <img src="../../../assets/img/menu/logo.png" alt="Fegui Sajusa Logo">
+          </a>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="search">
+          <input type="text" placeholder="Buscar...">
+          <button><i class="fa fa-search"></i></button>
+        </div>
+      </div>
+      <div class="col-md-1">
+        <div class="user">
+          <a routerLink="carrito" class="btn cart">
+            <i class="fa fa-shopping-cart"></i>
+            <span>(0)</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Bottom Bar End -->
+
+<!-- Nav Bar Start -->
+<div class="nav">
+  <div class="container-fluid">
+    <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+      <a href="#" class="navbar-brand">MENU</a>
+      <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="container">
+        <div class="collapse navbar-collapse justify-content-end " id="navbarCollapse">
+          <div class="navbar-nav">
+            <a routerLink="inicio" class="nav-item nav-link">inicio</a>
+  
+            <div class="nav-item dropdown"  >
+              <a class="nav-link dropdown-toggle" data-toggle="dropdown" >categorías</a>
+              <div class="dropdown-menu">
+                <a routerLink="/categorias/{{categories[i].content}}" class="dropdown-item" *ngFor="let category of categories; let i = index;">{{categories[i].content.charAt(0).toUpperCase()+categories[i].content.slice(1)}}</a>
+              </div>
+            </div>
+  
+            <a routerLink="blog" class="nav-item nav-link" >Blog</a>
+            <a routerLink="cuenta" class="nav-item nav-link">cuenta</a>
+  
+            <div class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Más paginas</a>
+              <div class="dropdown-menu">
+                <a routerLink="/contacto" class="dropdown-item">Contáctanos</a>                
+                <a routerLink="cuenta/login" class="dropdown-item">Login & Register</a>
+              </div>
+            </div>
+  
+          </div>
+          <!-- <div class="navbar-nav">
+            <div class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Cuenta</a>
+              <div class="dropdown-menu">
+                <a href="#" class="dropdown-item">Login</a>
+                <a href="#" class="dropdown-item">Register</a>
+              </div>
+            </div> 
+          </div>-->
+        </div>
+      </div>
+    </nav>
+  </div>
+</div>
+<!-- Nav Bar End -->
+
+</div>

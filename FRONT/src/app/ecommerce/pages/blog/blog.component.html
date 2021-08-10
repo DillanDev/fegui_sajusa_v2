@@ -1,0 +1,42 @@
+<div class="contact-d  pt-4">
+  <div class="container">
+
+    <!-- Card List Start -->
+    <div class="card-view">
+      <div class="container mt-4">
+        <div class="container" >
+          <div id="card"*ngFor="let article of articles | 
+                paginate:  {
+                    itemsPerPage: 6, 
+                    currentPage: page
+                  
+                  };
+                  let i = index ">
+
+            <div class="card m-4">
+              <img src="../../../../assets/img/home/MEDICINA.PNG" class="card-img-top" alt="...">
+              <div class="card-body">
+                <h5 class="card-title">{{articles[i].title}}</h5>
+                <p class="card-text">{{articles[i].content}}</p>
+                <a href="#" class="btn btn-primary">Ver más</a>
+              </div>
+            </div>
+
+          </div>
+
+
+        </div>
+
+        <div class="clearfix">
+
+        </div>
+
+        <!-- Pagination Start -->
+          <pagination-controls (pageChange)="page = $event"></pagination-controls>
+
+        <!-- Pagination Start -->
+
+      </div>
+    </div>
+  </div>
+  </div>

@@ -1,0 +1,108 @@
+
+
+.container-all{    
+
+    
+    width:  100%; 
+    margin: auto;
+    text-align: center;
+
+    
+}
+
+
+#line-footer {
+    border: none;
+    height: 7px;
+
+    background-color: #144B67;
+  }
+
+.container-body{
+    padding: 20px;
+    height: 418px;
+    display: flex;
+    justify-content: space-between;
+    background-position: center;
+    background-size: cover;
+    background-image: -webkit-linear-gradient(top, rgba(206, 231, 244, 0.137), rgba(206, 231, 244, 0.185)),url('../img/medicalfooter.png');
+    background-repeat: no-repeat;
+
+    background-size: 500px 100%;
+    background-color: #CEE7F4;
+
+}
+
+
+
+
+.container-body h2{
+    color: #0A162C;
+    font-size: 18px;
+
+}
+
+.container-body > .colum1  > span,
+.container-body > .colum2 > span{
+    color: #256187;
+    font-size: 18px;
+
+}
+
+
+.colum1,
+.colum2,
+.colum3{
+    margin-top: 30px;
+    max-width: 453px;
+}
+
+
+
+
+.colum3 > .icono{
+    fill: #175676;
+    height: 56px;
+    width: 56px;
+}
+
+
+.container-footer{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 15px;
+    background-color: #175676;
+    color: #CEE7F4;
+    height: 48px;
+
+}
+
+@media screen and (max-width:1100px) {
+    .container-body{
+        flex-wrap: wrap;
+    }
+    .container-body h2{
+        color: #0A162C;
+        font-size: 14px;
+    
+    }
+    
+    .container-body > .colum1  > span,
+    .container-body > .colum2 > span{
+        color: #256187;
+        font-size: 10px;
+    
+    }
+
+    .colum3 > .icono{
+        fill: #175676;
+        height: 22px;
+        width: 22px;
+    }
+
+    .copyright{
+        font-size: 10px;
+    }
+    
+}

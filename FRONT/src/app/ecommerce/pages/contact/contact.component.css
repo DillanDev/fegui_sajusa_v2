@@ -1,0 +1,86 @@
+
+.contact-d{
+    background-color: #f8f8f8 ;
+}
+
+a {
+    color: #4BA3C3;
+    text-decoration: none;
+}
+  
+  
+  a:hover,
+  a:active,
+  a:focus {
+    color: #BA324F;
+    outline: none;
+    text-decoration: none;
+  }
+  
+  
+
+/**********************************/
+/********** Contact CSS ***********/
+/**********************************/
+.contact {
+    position: relative;
+    padding-top: 30px;
+}
+
+.contact .contact-info,
+.contact .contact-form,
+.contact .contact-map {
+    height: 100%;
+    padding: 30px;
+    background: #ffffff;
+    border-bottom: 30px solid #f8f8f8;
+}
+
+.contact .contact-info h2 {
+    margin-bottom: 15px;
+}
+
+.contact .contact-info h3 {
+    margin-bottom: 15px;
+    font-size: 15px;
+}
+
+.contact .contact-info h3 i {
+    width: 20px;
+    color: #4BA3C3;
+    margin-right: 5px;
+}
+
+.contact .social {
+    position: relative;
+    width: 100%;
+}
+
+.contact .social a {
+    display: inline-block;
+    margin: 10px 10px 0 0;
+    width: 40px;
+    height: 40px;
+    padding: 5px 0;
+    text-align: center;
+    font-size: 18px;
+    border: 1px solid #4BA3C3;
+    border-radius: 4px;
+}
+
+.contact .social a i {
+    color: #4BA3C3;
+}
+
+.contact .social a:hover {
+    background: #4BA3C3;
+}
+
+.contact .social a:hover i {
+    color: #ffffff;
+}
+
+.contact .contact-map iframe {
+    width: 100%;
+    height: 450px;
+}

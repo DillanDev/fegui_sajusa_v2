@@ -1,0 +1,11 @@
+#card{
+    float: left !important;
+}
+
+
+
+@media screen and (max-width: 500px) {
+    #card{
+        display: inline !important;
+    }
+}
