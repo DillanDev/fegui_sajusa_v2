@@ -1,0 +1,60 @@
+
+
+.contact-d{
+    background-color: #f8f8f8 ;
+}
+
+a {
+    color: #4BA3C3;
+    text-decoration: none;
+}
+  
+  
+a:hover,
+a:active,
+a:focus {
+    color: #BA324F;
+    outline: none;
+    text-decoration: none;
+}
+  
+
+img{
+    max-width: 100%;
+    width: auto \9;
+    height: ;
+
+}
+
+h2{
+    color: #2e86a6;
+    font-size: 1.8em;
+}
+
+.itemDateCreated {
+    float: left;
+}
+
+.itemDateCreated {
+    background: #4BA3C3;
+}
+.itemDateCreated {
+    float: left;
+    position: relative;
+    width: 68px;
+    height: 68px;
+    margin-top: -36px;
+    text-align: center;
+    color: #FFF;
+    font-family: Merriweather;
+    margin-left: 19px;
+    margin-right: 13px;
+    text-transform: uppercase;
+    font-size: 18px;
+    padding: 10px;
+
+}
+
+p{
+        font-family: 'Raleway', sans-serif;
+}

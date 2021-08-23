@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.App = void 0;
 const express_1 = __importDefault(require("express"));
+const morgan_1 = __importDefault(require("morgan"));
 const express_fileupload_1 = __importDefault(require("express-fileupload"));
 const cors_1 = __importDefault(require("cors"));
 const routes_1 = require("../router/routes");
@@ -34,12 +35,13 @@ class App {
         this.app.use(express_1.default.urlencoded({ extended: false }));
         this.app.use(express_fileupload_1.default());
         this.app.use(cors_1.default());
+        this.app.use(morgan_1.default('tiny'));
     }
     routes() {
-        this.route.CustomerRoute.routes(this.app);
         this.route.AuthRoutes.routes(this.app);
         this.route.ProductRoutes.routes(this.app);
-        this.route.EmployeeRoute.routes(this.app);
+        this.route.UserRoutes.routes(this.app);
+        this.route.UploadRoutes.routes(this.app);
     }
     listen() {
         return __awaiter(this, void 0, void 0, function* () {

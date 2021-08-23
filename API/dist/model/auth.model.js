@@ -32,105 +32,271 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthModel = void 0;
-const connection_1 = __importDefault(require("../config/connection"));
 const jwt = __importStar(require("jsonwebtoken"));
-const key_customer_1 = __importDefault(require("../config/key-customer"));
-const key_admin_1 = __importDefault(require("../config/key-admin"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const connection_1 = __importDefault(require("../config/connection"));
+const mailer_1 = require("../config/mailer");
+const key_users_1 = __importDefault(require("../config/key-users"));
 class AuthModel {
-    constructor() {
-        this.Query = '';
-        this.inserts = [''];
-    }
-    login(email, password, name) {
+    static login(data, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            var b = false;
-            let SQL = `SELECT password FROM ${name} WHERE email = '${email}'`;
-            let rows = yield connection_1.default.executeQuery(SQL);
+            const { email, password } = data;
+            this.Query = `SELECT status FROM users WHERE email = '${email}'`;
+            var rows = yield connection_1.default.executeQuery(this.Query);
+            if (rows[0].status === 'disabled')
+                return res.status(404).json({ ok: false, message: 'User disabled!' });
+            this.Query = `SELECT * FROM users WHERE email = '${email}' AND status = 'active'`;
+            rows = yield connection_1.default.executeQuery(this.Query);
+            if (!rows[0]) {
+                return res.status(406).json({
+                    ok: false,
+                    message: 'Email or password invalid'
+                });
+            }
+            this.Query = `SELECT password FROM users WHERE email = '${email}' AND status = 'active'`;
+            rows = yield connection_1.default.executeQuery(this.Query);
             const pass_hash = bcrypt_1.default.compareSync(password, rows[0].password);
             if (pass_hash == false) {
-                return b;
+                return res.status(406).json({
+                    ok: false,
+                    message: 'Email or password invalid'
+                });
             }
             else if (pass_hash == true) {
-                SQL = `SELECT * FROM ${name} WHERE email = '${email}'`;
-                const rows2 = yield connection_1.default.executeQuery(SQL);
-                if (name == 'employees') {
-                    const token = jwt.sign({ userId: rows2[0].id, username: rows2[0].name }, key_admin_1.default.jwtSecret, { expiresIn: '1h' });
-                    b = true;
-                    return { b, token };
+                this.Query = `SELECT * FROM users WHERE email = '${email}' AND status = 'active'`;
+                rows = yield connection_1.default.executeQuery(this.Query);
+                if (rows[0].role == 'admin') {
+                    const token = jwt.sign({ userId: rows[0].id, username: rows[0].name, role: rows[0].role }, key_users_1.default.jwtSecret, { expiresIn: '1h' });
+                    return res.status(200).json({
+                        ok: true,
+                        id: rows[0].id,
+                        token
+                    });
                 }
-                else if (name == 'customers') {
-                    const token = jwt.sign({ userId: rows2[0].id, username: rows2[0].name }, key_customer_1.default.jwtSecret);
-                    b = true;
-                    return { b, token };
+                else if (rows[0].role == 'client') {
+                    const token = jwt.sign({ userId: rows[0].id, username: rows[0].name, role: rows[0].role }, key_users_1.default.jwtSecret);
+                    return res.status(200).json({
+                        ok: true,
+                        id: rows[0].id,
+                        token
+                    });
                 }
             }
         });
     }
-    customer(body) {
+    static register(data, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                body.password = yield bcrypt_1.default.hash(body.password, 10);
+                this.Query = `SELECT status FROM users WHERE email = '${data.email}'`;
+                var rows = yield connection_1.default.executeQuery(this.Query);
+                if (rows[0]) {
+                    if (rows[0].status === 'disabled') {
+                        return res.status(404).json({ ok: false, message: 'User disabled!' });
+                    }
+                }
+                if (!(yield AuthModel.valEmail(data))) {
+                    return res.status(406).json({
+                        ok: false,
+                        message: 'Email exist!'
+                    });
+                }
+                if (!(yield AuthModel.valTel(data))) {
+                    return res.status(406).json({
+                        ok: false,
+                        message: 'Telephone exist!'
+                    });
+                }
+                if (data.role) {
+                    if (!(data.role == 'admin' || data.role == 'client')) {
+                        return res.status(406).json({
+                            ok: false,
+                            message: 'Error in role!'
+                        });
+                    }
+                }
+                data.password = yield bcrypt_1.default.hash(data.password, 10);
                 this.Query = `
             INSERT INTO
-            customers(name, surname, gender, email,telephone, password, city, region, zip)
-            VALUES (?,?,?,?,?,?,?,?,?)`;
-                this.inserts = [`${body.name}`, `${body.surname}`, `${body.gender}`, `${body.email}`, `${body.telephone}`, `${body.password}`, `${body.city}`, `${body.city}`, `${body.region}`];
-                this.Query = connection_1.default.instance.cnn.format(this.Query, this.inserts);
-                let result = yield connection_1.default.executeQuery(this.Query);
-                if (result.constructor.name === "OkPacket")
-                    return true;
-            }
-            catch (error) {
-                console.log('Query failed');
-            }
-        });
-    }
-    employee(body) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                body.password = yield bcrypt_1.default.hash(body.password, 10);
-                this.Query = `
-            INSERT INTO
-            employees(name, surname, gender, email,telephone, password, role, city, region, zip)
+
+            users(
+            name, 
+            surname, 
+            gender, 
+            email,
+            telephone, 
+            password, 
+            role, 
+            city, 
+            region, 
+            zip)
+
             VALUES (?,?,?,?,?,?,?,?,?,?)`;
-                this.inserts = [`${body.name}`, `${body.surname}`, `${body.gender}`, `${body.email}`, `${body.telephone}`, `${body.password}`, `${body.role}`, `${body.city}`, `${body.city}`, `${body.region}`];
+                this.inserts = [
+                    `${data.name}`,
+                    `${data.surname}`,
+                    `${data.gender}`,
+                    `${data.email}`,
+                    `${data.telephone}`,
+                    `${data.password}`,
+                    `${data.role}`,
+                    `${data.city}`,
+                    `${data.region}`,
+                    `${data.zip}`
+                ];
+                if (!data.role) {
+                    data.role = 'client';
+                }
                 this.Query = connection_1.default.instance.cnn.format(this.Query, this.inserts);
                 let result = yield connection_1.default.executeQuery(this.Query);
-                if (result.constructor.name === "OkPacket")
-                    return true;
+                if (result.constructor.name === "OkPacket") {
+                    this.Query = `SELECT * FROM users WHERE email = '${data.email}'`;
+                    let result = yield connection_1.default.executeQuery(this.Query);
+                    delete result[0].password;
+                    return res.status(200).json({
+                        ok: true,
+                        user: {
+                            role: result[0].role,
+                            id: result[0].id,
+                            status: result[0].status,
+                            name: result[0].name,
+                            surname: result[0].surname,
+                            email: result[0].email
+                        }
+                    });
+                }
             }
             catch (error) {
-                console.log('Query failed');
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Bad query!'
+                });
             }
         });
     }
-    valEmail(body, name) {
+    static valEmail(data) {
         return __awaiter(this, void 0, void 0, function* () {
-            //Validando si existe el gmail
-            this.Query = `SELECT email FROM ${name} WHERE email= '${body.email}'`;
+            this.Query = `SELECT email FROM users WHERE email= '${data.email}'`;
             let result = yield connection_1.default.executeQuery(this.Query);
             if (result[0] == undefined) {
-                return 'No existe el email';
+                return true;
             }
             else if (result[0].constructor.name == 'RowDataPacket') {
-                console.log(result[0].constructor.name);
-                return 'Ya existe el email';
+                return false;
             }
         });
     }
-    valTel(body, name) {
+    static valTel(data) {
         return __awaiter(this, void 0, void 0, function* () {
-            //Validando si existe el celular
-            this.Query = `SELECT telephone FROM ${name} WHERE telephone= '${body.telephone}'`;
+            this.Query = `SELECT telephone FROM users WHERE telephone= '${data.telephone}'`;
             let resultT = yield connection_1.default.executeQuery(this.Query);
             if (resultT[0] == undefined) {
-                return 'No existe el celular';
+                return true;
             }
             else if (resultT[0].constructor.name == 'RowDataPacket') {
-                return 'Ya existe el celular';
+                return false;
+            }
+        });
+    }
+    static changePassword(oldPass, newPass, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { userId } = res.locals.jwtPayload;
+            this.Query = `SELECT password FROM users WHERE id = '${userId}'`;
+            let result = yield connection_1.default.executeQuery(this.Query);
+            const pass_hash = bcrypt_1.default.compareSync(oldPass, result[0].password);
+            if (!pass_hash) {
+                return res.status(406).json({
+                    ok: false,
+                    message: 'Password incorrect!'
+                });
+            }
+            let _newPass = yield bcrypt_1.default.hash(newPass, 10);
+            this.Query = `UPDATE users SET password ='${_newPass}' WHERE id='${userId}' AND status = 'active'`;
+            result = yield connection_1.default.executeQuery(this.Query);
+            if (result.constructor.name === 'OkPacket') {
+                return res.status(200).json({
+                    ok: true,
+                    message: 'Success!'
+                });
+            }
+        });
+    }
+    static forgortPassword(email, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const message = 'Check your email for a link to reset your password';
+            let verificationLink;
+            try {
+                this.Query = `SELECT id,name FROM users WHERE email= '${email}' AND status = 'active'`;
+                let result = yield connection_1.default.executeQuery(this.Query);
+                const { id, name } = result[0];
+                const token = jwt.sign({ userId: id, username: name }, key_users_1.default.jwtSecretReset, { expiresIn: '10m' });
+                verificationLink = `http://localhost:4200/fegui_sajusa/api/v2/new-password/${token}`;
+                this.Query = `UPDATE users SET resetToken='${token}' WHERE id='${id}'`;
+            }
+            catch (error) {
+                return res.status(400).json({
+                    ok: false,
+                    message
+                });
+            }
+            try {
+                yield connection_1.default.executeQuery(this.Query);
+            }
+            catch (error) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Something goes wrong!'
+                });
+            }
+            try {
+                // send mail with defined transport object
+                yield mailer_1.transporter.sendMail({
+                    from: '"Team FeguiSajusa"',
+                    to: email,
+                    subject: `Forgort Password `,
+                    html: `
+                <p>Expires in 10m</p> 
+                <p>Please click in link, or paste this into your browser to complete the process:  </p> 
+                <a href="${verificationLink}">${verificationLink}</a>
+                `
+                });
+            }
+            catch (error) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Something goes wrong!'
+                });
+            }
+            return res.status(200).json({
+                ok: true,
+                message
+            });
+        });
+    }
+    static createNewPassword(resetToken, newPassword, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let jwtPayload = jwt.verify(resetToken, key_users_1.default.jwtSecretReset);
+                // this.Query =  `SELECT password FROM users WHERE resetToken = '${resetToken}'`;
+                // var result:any = await MySQL.executeQuery(this.Query);
+                let _newPassword = yield bcrypt_1.default.hash(newPassword, 10);
+                this.Query = `UPDATE users SET password ='${_newPassword}' WHERE resetToken='${resetToken}' AND status = 'active'`;
+                var result = yield connection_1.default.executeQuery(this.Query);
+                if (result.constructor.name === 'OkPacket') {
+                    return res.status(200).json({
+                        ok: true,
+                        message: 'Password change!'
+                    });
+                }
+            }
+            catch (error) {
+                return res.status(401).json({
+                    ok: false,
+                    message: 'Something goes wrong!'
+                });
             }
         });
     }
 }
 exports.AuthModel = AuthModel;
+AuthModel.Query = '';
+AuthModel.inserts = [''];

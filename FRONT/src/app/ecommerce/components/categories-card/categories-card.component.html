@@ -4,9 +4,13 @@
         <h2 class="title">Categorias</h2>
         <hr class="bg-info">
         <nav class="navbar bg-light">
-            <ul class="navbar-nav" *ngFor="let category of categories; let i = index;">
+            <ul class="navbar-nav" *ngFor="let category of categ.categories; let i = index;">
                 <li class="nav-item">
-                    <a class="nav-link" routerLink="/categorias/{{categories[i].content}}">{{categories[i].content.charAt(0).toUpperCase()+categories[i].content.slice(1)}}</a>
+
+                    <a class="nav-link" routerLink="/categorias/{{categ.categories[i].id}}">
+                    {{categ.categories[i].id.charAt(0).toUpperCase()+categ.categories[i].id.slice(1)}}
+
+                    </a>
                 </li>
                 
             </ul>

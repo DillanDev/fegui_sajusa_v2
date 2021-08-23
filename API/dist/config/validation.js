@@ -1,57 +1,37 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Validation = void 0;
-class Validation {
-    AlonString(x, maxL, minL) {
-        const regex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/;
-        let b = false;
-        if (!regex.test(x) || x.length >= maxL || x.length <= minL) {
-            return b = false;
-        }
-        else {
-            return b = true;
-        }
+exports.forgortPasswordValidation = exports.createUsersValidation = void 0;
+function createUsersValidation(data) {
+    const { name, surname, email, password, gender, telephone } = data;
+    const string = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/;
+    const emailV = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const telephoneV = /^[(]{0,1}[+]?[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
+    if (!string.test(name) || name.length >= 30 || name.length <= 2) {
+        return false;
     }
-    email(x, maxL, minL) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const regex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-            let b = false;
-            if (!regex.test(x) || x.length >= maxL || x.length <= minL) {
-                return b = false;
-            }
-            else {
-                return b = true;
-            }
-        });
+    if (!string.test(surname) || surname.length >= 60 || surname.length <= 2) {
+        return false;
     }
-    password(x, maxL, minL) {
-        let b = false;
-        if (x.length >= maxL || x.length <= minL) {
-            return b = false;
-        }
-        else {
-            return b = true;
-        }
+    if (!emailV.test(email) || email.length >= 60 || email.length <= 5) {
+        return false;
     }
-    AlonNumber(x, maxL, minL) {
-        const regex = /^[(]{0,1}[+]?[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
-        ;
-        let b = false;
-        if (!regex.test(x) || x.length >= maxL || x.length <= minL) {
-            return b = false;
-        }
-        else {
-            return b = true;
-        }
+    if (!string.test(gender) || gender.length >= 15 || gender.length <= 2) {
+        return false;
     }
+    if (password.length >= 60 || password.length <= 5) {
+        return false;
+    }
+    if (!telephoneV.test(telephone) || telephone.length >= 15 || telephone.length <= 4) {
+        return false;
+    }
+    return true;
 }
-exports.Validation = Validation;
+exports.createUsersValidation = createUsersValidation;
+function forgortPasswordValidation(email) {
+    const emailV = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (!emailV.test(email) || email.length >= 60 || email.length <= 5) {
+        return false;
+    }
+    return true;
+}
+exports.forgortPasswordValidation = forgortPasswordValidation;

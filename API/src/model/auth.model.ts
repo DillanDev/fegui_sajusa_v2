@@ -1,100 +1,337 @@
-import MySQL from '../config/connection';
 import * as jwt from 'jsonwebtoken';
-import keyCustomer from "../config/key-customer";
-import keyAdmin from "../config/key-admin";
 import bcrypt from 'bcrypt';
+
+import MySQL from '../config/connection';
+import {transporter} from '../config/mailer';
+import { DataI, ResponseI } from './../interface/data.interface'
+import { UploadController } from '../controller/upload.controller';
+import { UploadModel } from './upload.model';
+import key from "../config/key-users";
+
 
 export class AuthModel{
 
-    private Query = '';
-    private inserts =[''];
+    static Query = '';
+    static inserts =[''];
+
+    static async login(data:DataI,res:ResponseI){
+
+         const {email,password} = data;
+
+         this.Query = `SELECT status FROM users WHERE email = '${email}'`;
+         var rows:any =await MySQL.executeQuery(this.Query);
+         if(rows[0].status==='disabled') return res.status(404).json({ok:false,message:'User disabled!'})
 
 
-    public async login(email:string,password:string, name:string){
+         this.Query = `SELECT * FROM users WHERE email = '${email}' AND status = 'active'`;
+         rows =await MySQL.executeQuery(this.Query);
 
-        var b: boolean = false;
-        let SQL = `SELECT password FROM ${name} WHERE email = '${email}'`;
-        let rows:any =  await MySQL.executeQuery(SQL);
-        const pass_hash = bcrypt.compareSync(password,rows[0].password);
 
-        if(pass_hash==false){
 
-            return b;
+         if(!rows[0]){
 
-        }else if(pass_hash == true){
-            SQL = `SELECT * FROM ${name} WHERE email = '${email}'`;
-            const rows2:any =await MySQL.executeQuery(SQL);
-            if(name == 'employees'){
-                const token = jwt.sign({userId:rows2[0].id,username:rows2[0].name},keyAdmin.jwtSecret,{expiresIn: '1h'});
-                b = true;
-                return {b, token};
-            }else if(name == 'customers'){
-                const token = jwt.sign({userId:rows2[0].id,username:rows2[0].name},keyCustomer.jwtSecret);
-                b = true;
-                return {b, token};
+            return  res.status(406).json({
+                        ok:false,
+                        message: 'Email or password invalid'
+                     });
+         }
+
+         this.Query = `SELECT password FROM users WHERE email = '${email}' AND status = 'active'`;
+         rows =  await MySQL.executeQuery(this.Query);
+         const pass_hash = bcrypt.compareSync(password,rows[0].password);
+
+
+         if(pass_hash==false){
+
+            return res.status(406).json({
+                        ok:false,
+                        message: 'Email or password invalid'
+                     });
+
+         }else if(pass_hash == true){
+            this.Query = `SELECT * FROM users WHERE email = '${email}' AND status = 'active'`;
+            rows =await MySQL.executeQuery(this.Query);
+
+            if(rows[0].role == 'admin'){
+
+                const token = jwt.sign({userId:rows[0].id,username:rows[0].name,role:rows[0].role},key.jwtSecret,{expiresIn: '1h'});
+                return res.status(200).json({
+                        ok:true,
+                        id: rows[0].id,
+                        token
+                     });
+
+            }else if(rows[0].role == 'client'){
+                const token = jwt.sign({userId:rows[0].id,username:rows[0].name,role:rows[0].role},key.jwtSecret);
+                return res.status(200).json({
+                        ok:true,
+                        id: rows[0].id,
+                        token
+                     });
             }
+
+
         }
 
     }
 
-    public async customer(body:any){
-        try {
-            body.password = await bcrypt.hash(body.password,10);
-            this.Query =`
-            INSERT INTO
-            customers(name, surname, gender, email,telephone, password, city, region, zip)
-            VALUES (?,?,?,?,?,?,?,?,?)`;
-            this.inserts = [`${body.name}`,`${body.surname}`,`${body.gender}`,`${body.email}`,`${body.telephone}`,`${body.password}`,`${body.city}`,`${body.city}`,`${body.region}`];
-            this.Query = MySQL.instance.cnn.format(this.Query,this.inserts);
-            let result:any = await MySQL.executeQuery(this.Query);
-            if(result.constructor.name === "OkPacket") return true;
-        } catch (error) {
-            console.log('Query failed');
-        }
-    }
 
+    static async register(data:DataI,res:ResponseI){
 
-    public async employee(body:any){
-
-       
 
         try {
-            body.password = await bcrypt.hash(body.password,10);
+
+             this.Query = `SELECT status FROM users WHERE email = '${data.email}'`;
+             var rows:any =await MySQL.executeQuery(this.Query);
+
+            if(rows[0]){
+                if(rows[0].status==='disabled'){
+                    return res.status(404).json({ok:false,message:'User disabled!'})
+                }
+
+             }
+             
+
+             if(!await AuthModel.valEmail(data)){
+                return res.status(406).json({
+                        ok:false,
+                        message: 'Email exist!'
+                    });
+             }
+
+
+             if(!await AuthModel.valTel(data)){
+                return res.status(406).json({
+                        ok:false,
+                        message: 'Telephone exist!'
+                    });
+             }
+
+            if(data.role){
+                if(!(data.role == 'admin' || data.role == 'client' )){
+                     return res.status(406).json({
+                            ok:false,
+                            message: 'Error in role!'
+                        });
+                }
+            }
+            
+
+            data.password = await bcrypt.hash(data.password,10);
             this.Query =`
             INSERT INTO
-            employees(name, surname, gender, email,telephone, password, role, city, region, zip)
+
+            users(
+            name, 
+            surname, 
+            gender, 
+            email,
+            telephone, 
+            password, 
+            role, 
+            city, 
+            region, 
+            zip)
+
             VALUES (?,?,?,?,?,?,?,?,?,?)`;
-            this.inserts = [`${body.name}`,`${body.surname}`,`${body.gender}`,`${body.email}`,`${body.telephone}`,`${body.password}`,`${body.role}`,`${body.city}`,`${body.city}`,`${body.region}`];
-            this.Query = MySQL.instance.cnn.format(this.Query,this.inserts);
+
+            this.inserts  = [
+            `${data.name}`,
+            `${data.surname}`,
+            `${data.gender}`,
+            `${data.email}`,
+            `${data.telephone}`,
+            `${data.password}`,
+            `${data.role}`,
+            `${data.city}`,
+            `${data.region}`,
+            `${data.zip}`];
+
+            if(!data.role){
+                data.role = 'client';
+            }
+
+            this.Query = MySQL.instance.cnn.format(this.Query,this.inserts );
             let result:any = await MySQL.executeQuery(this.Query);
-            if(result.constructor.name === "OkPacket") return true;
+
+            if(result.constructor.name === "OkPacket"){
+                this.Query = `SELECT * FROM users WHERE email = '${data.email}'`;
+                let result:any = await MySQL.executeQuery(this.Query);
+                delete result[0].password;
+
+                return res.status(200).json({
+                    ok:true,
+                    user: {
+                        role: result[0].role,
+                        id: result[0].id,
+                        status: result[0].status,
+                        name: result[0].name,
+                        surname: result[0].surname,
+                        email: result[0].email
+                    }
+                });
+            }
+                
+        
+            
+
+
         } catch (error) {
-            console.log('Query failed');
+             return res.status(400).json({
+                ok:false, 
+                message: 'Bad query!'
+            });
         }
     }
 
-    public async valEmail(body:any, name:string){
-         //Validando si existe el gmail
-         this.Query= `SELECT email FROM ${name} WHERE email= '${body.email}'`;
-         let result:any = await MySQL.executeQuery(this.Query);
+    static async valEmail(data:DataI){
+
+
+        this.Query= `SELECT email FROM users WHERE email= '${data.email}'`;
+        let result:any = await MySQL.executeQuery(this.Query);
          
         if(result[0]==undefined) {
-            return 'No existe el email'
+            return true;
         }else if(result[0].constructor.name == 'RowDataPacket'){
-            console.log(result[0].constructor.name);
-            return 'Ya existe el email';
+
+            return false;
         }
 
     }
 
-    public async valTel(body:any,name:string){
-        //Validando si existe el celular
-        this.Query= `SELECT telephone FROM ${name} WHERE telephone= '${body.telephone}'`;
+    static async valTel(data:DataI){
+
+        this.Query= `SELECT telephone FROM users WHERE telephone= '${data.telephone}'`;
         let resultT:any = await MySQL.executeQuery(this.Query);
        if(resultT[0] == undefined){
-           return 'No existe el celular'
+            return true;
        }else if(resultT[0].constructor.name == 'RowDataPacket'){
-           return 'Ya existe el celular';
+            return false;
        }
-   }
+    }
+
+    static async changePassword(oldPass:string,newPass:string,res:ResponseI){
+        const { userId } = res.locals.jwtPayload;
+
+        this.Query = `SELECT password FROM users WHERE id = '${userId}'`;
+        let result:any = await MySQL.executeQuery(this.Query);
+        const pass_hash = bcrypt.compareSync(oldPass,result[0].password);
+
+        if(!pass_hash){
+            return res.status(406).json({
+                        ok:false,
+                        message: 'Password incorrect!'
+                    }); 
+        }
+
+        let  _newPass = await bcrypt.hash(newPass,10);
+
+
+        this.Query = `UPDATE users SET password ='${ _newPass}' WHERE id='${userId}' AND status = 'active'`;
+        result = await MySQL.executeQuery(this.Query);
+
+        if(result.constructor.name === 'OkPacket'){
+
+            return res.status(200).json({
+                        ok:true,
+                        message: 'Success!'
+                    }); 
+        }
+        
+    }
+
+    static async forgortPassword(email:string,res:ResponseI){
+        
+        const message = 'Check your email for a link to reset your password';
+
+        let verificationLink;
+
+        try{
+
+            this.Query= `SELECT id,name FROM users WHERE email= '${email}' AND status = 'active'`;
+            let result:any = await MySQL.executeQuery(this.Query);
+            const {id,name } = result[0];
+
+            const token = jwt.sign({userId: id, username: name }, key.jwtSecretReset, {expiresIn: '10m'} )
+            verificationLink = `http://localhost:4200/fegui_sajusa/api/v2/new-password/${token}`;
+            this.Query = `UPDATE users SET resetToken='${token}' WHERE id='${id}'`;
+
+        }catch(error){
+            return res.status(400).json({
+                ok:false, 
+                message
+            });
+        }
+
+
+        try{
+            await MySQL.executeQuery(this.Query);
+        }catch(error){
+            return res.status(400).json({
+                ok:false, 
+                message:  'Something goes wrong!'
+            });
+        }
+
+
+        try{
+
+              // send mail with defined transport object
+              await transporter.sendMail({
+                from: '"Team FeguiSajusa"', // sender address
+                to: email, // list of receivers
+                subject: `Forgort Password `, // Subject line
+                html: `
+                <p>Expires in 10m</p> 
+                <p>Please click in link, or paste this into your browser to complete the process:  </p> 
+                <a href="${verificationLink}">${verificationLink}</a>
+                `
+              });
+
+
+        }catch(error){
+            return res.status(400).json({
+                ok:false, 
+                message:  'Something goes wrong!'
+            });
+        }
+
+       
+        return res.status(200).json({
+            ok:true,
+            message
+        });
+    }
+
+    static async createNewPassword(resetToken:string, newPassword: string,res:ResponseI){
+
+
+        try{
+            let jwtPayload = jwt.verify(resetToken,key.jwtSecretReset);
+            // this.Query =  `SELECT password FROM users WHERE resetToken = '${resetToken}'`;
+            // var result:any = await MySQL.executeQuery(this.Query);
+
+            let  _newPassword = await bcrypt.hash(newPassword,10);
+
+            this.Query = `UPDATE users SET password ='${_newPassword}' WHERE resetToken='${resetToken}' AND status = 'active'`;
+            var result:any = await MySQL.executeQuery(this.Query);
+
+            if(result.constructor.name === 'OkPacket'){
+
+                return res.status(200).json({
+                            ok:true,
+                            message: 'Password change!'
+                        }); 
+            }
+
+        }catch(error){
+             return res.status(401).json({
+                ok:false, 
+                message:  'Something goes wrong!'
+            });
+        }
+
+      
+    }
+   
 }

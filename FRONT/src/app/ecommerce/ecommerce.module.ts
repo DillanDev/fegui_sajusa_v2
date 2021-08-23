@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { SlickCarouselModule } from 'ngx-slick-carousel'
 import { HomeComponent } from './pages/home/home.component';
 import { AccountComponent } from './pages/account/account.component';
 import { CartComponent } from './pages/cart/cart.component';
@@ -15,6 +16,7 @@ import { CategoriesComponent } from './pages/categories/categories.component';
 import { ArticleComponent } from './pages/article/article.component';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { CategoriesCardComponent } from './components/categories-card/categories-card.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
 
@@ -39,6 +41,8 @@ import { CategoriesCardComponent } from './components/categories-card/categories
   ],
   imports: [
     CommonModule,
+    SlickCarouselModule,
+    ReactiveFormsModule,
     NgxPaginationModule,
     AppRoutingModule
 

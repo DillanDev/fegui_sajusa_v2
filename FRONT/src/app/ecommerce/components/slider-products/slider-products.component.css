@@ -1,85 +1,12 @@
 
-
-
-/**********************************/
-/******* Normal Slider CSS ********/
-/**********************************/
-.normal-slider .slick-prev,
-.normal-slider .slick-next {
-    width: 40px;
-    height: 40px;
-    z-index: 1;
-    opacity: 0;
-    transition: .5s;
-    background: rgba(255, 111, 97, .7);
-    border-radius: 4px;
+.slick-slider {
+    width: 88%;
+    height: 380px;
+    margin-right: auto;
+    margin-left: auto;
+    
 }
-
-.normal-slider .slick-prev {
-    left: 55px;
-}
-
-.normal-slider .slick-next {
-    right: 55px;
-}
-
-.normal-slider.slick-slider:hover .slick-prev {
-    left: 15px;
-    opacity: 1;
-}
-
-.normal-slider.slick-slider:hover .slick-next {
-    right: 15px;
-    opacity: 1;
-}
-
-.normal-slider .slick-prev:hover,
-.normal-slider .slick-prev:focus,
-.normal-slider .slick-next:hover,
-.normal-slider .slick-next:focus {
-    background: rgba(0, 0, 0, .7);
-}
-
-.normal-slider .slick-prev:hover::before,
-.normal-slider .slick-prev:focus::before,
-.normal-slider .slick-next:hover::before,
-.normal-slider .slick-next:focus::before {
-    color: #FF6F61;
-}
-
-.normal-slider .slick-prev::before,
-.normal-slider .slick-next::before {
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    font-size: 30px;
-    color: #ffffff;
-}
-
-.normal-slider .slick-prev::before {
-    content: "\f104";
-}
-
-.normal-slider .slick-next::before {
-    content: "\f105";
-}
-
-.normal-slider .slick-dots {
-    bottom: 15px;
-}
-
-.normal-slider .slick-dots li button:before {
-    color: #ffffff;
-    font-size: 15px;
-}
-
-.normal-slider .slick-dots li.slick-active button:before {
-    color: #FF6F61;
-}
-
-.slick-dotted.slick-slider {
-    margin-bottom: 0;
-}
-
+  
 
 
 /**********************************/
@@ -87,7 +14,7 @@
 /**********************************/
 .featured-product {
     position: relative;
-    padding: 30px 0;
+    padding: 15px 0;
 }
 
 .recent-product {
@@ -97,64 +24,8 @@
 
 .section-header {
     margin-bottom: 30px;
-    padding: 20px 30px 15px 30px;
+    padding: 10px;
     color: #fff;
     background: #4BA3C3;
     text-align: center;
-}
-
-.product .slick-prev,
-.product .slick-next {
-    top: -75px;
-    width: 30px;
-    height: 30px;
-    z-index: 1;
-    transition: .5s;
-    color: #4BA3C3;
-    background: #ffffff;
-    border: 1px solid #4BA3C3;
-    border-radius: 4px;
-}
-
-.product .slick-prev {
-    left: calc(100% - 120px);
-}
-
-.product .slick-next {
-    right: 45px;
-}
-
-.product .slick-prev:hover,
-.product .slick-prev:focus,
-.product .slick-next:hover,
-.product .slick-next:focus {
-    background: #4BA3C3;
-}
-
-.product .slick-prev::before,
-.product .slick-next::before {
-    font-family: "Font Awesome 5 Free";
-    font-size: 18px;
-    font-weight: 900;
-    color: #4BA3C3;
-}
-
-.product .slick-prev::before {
-    content: "\f104";
-}
-
-.product .slick-next::before {
-    content: "\f105";
-}
-
-.product .slick-prev:hover::before,
-.product .slick-prev:focus::before,
-.product .slick-next:hover::before,
-.product .slick-next:focus::before {
-    color: #ffffff;
-}
-
-
-@media screen and (max-width: 768px) {
-    
 }

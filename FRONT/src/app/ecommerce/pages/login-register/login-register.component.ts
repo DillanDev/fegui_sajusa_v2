@@ -1,5 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { BreadcrumbService } from 'xng-breadcrumb';
+import {FormGroup,FormControl,Validators} from '@angular/forms';
+import {Router} from '@angular/router';
+
+import { EcommerceService } from '../../services/ecommerce.service';
+import { LoginI } from '../../interfaces/login.interface';
+import { ResponseI } from '../../interfaces/response.interface';
+
 
 @Component({
   selector: 'app-login-register',
@@ -8,9 +14,18 @@ import { BreadcrumbService } from 'xng-breadcrumb';
 })
 export class LoginRegisterComponent implements OnInit {
 
-  constructor(
-    private breadcrumbService: BreadcrumbService
-    ) { }
+
+  loginform = new FormGroup({
+    email    : new FormControl('',Validators.required),
+    password : new FormControl('',Validators.required)
+
+  });
+
+
+  b: boolean;
+  constructor(private log: EcommerceService, private router:Router) { 
+    this.b = true;
+  }
 
   ngOnInit(): void {
     
@@ -18,4 +33,21 @@ export class LoginRegisterComponent implements OnInit {
   }
  
   
+  mostrar(){
+
+    return this.b;
+  }
+
+
+   onLogin(form:LoginI){
+
+    this.log.LoginByEmail(form).subscribe(res =>{
+      let dataResponse: ResponseI = res;
+      if(dataResponse.ok == true){
+        localStorage.setItem("token",dataResponse.token);
+        this.router.navigate(['cuenta']);
+
+      }
+    })
+  }
 }

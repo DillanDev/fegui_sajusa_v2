@@ -1,11 +1,32 @@
 #card{
     float: left !important;
+
+}
+
+.card{
+        float: left !important;
+
+}
+
+img{
+        width: auto \9 !important;
+
+}
+
+@media (max-width: 899px) {
+
+    .card{
+        float: left !important;
+        margin-left: 10px !important;
+        width: 16rem !important;
+        height: 18rem !important;
+
+      }
+  
+ 
 }
 
 
 
-@media screen and (max-width: 500px) {
-    #card{
-        display: inline !important;
-    }
-}
+
+

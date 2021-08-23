@@ -3,9 +3,9 @@
 
     <!-- Card List Start -->
     <div class="card-view">
-      <div class="container mt-4">
-        <div class="container" >
-          <div id="card"*ngFor="let article of articles | 
+      <div class=" mt-4">
+        <div class="container" id="card">
+          <div *ngFor="let article of articles | 
                 paginate:  {
                     itemsPerPage: 6, 
                     currentPage: page
@@ -18,7 +18,7 @@
               <div class="card-body">
                 <h5 class="card-title">{{articles[i].title}}</h5>
                 <p class="card-text">{{articles[i].content}}</p>
-                <a href="#" class="btn btn-primary">Ver más</a>
+                <a href="#" class="btn btn-primary" routerLink="/articulo">Ver más</a>
               </div>
             </div>
 

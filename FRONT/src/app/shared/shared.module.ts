@@ -4,6 +4,8 @@ import { MenuComponent } from './menu/menu.component';
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from '../app-routing.module';
 import { FooterComponent } from './footer/footer.component';
+import {MatIconModule} from '@angular/material/icon'
+
 
 
 
@@ -19,6 +21,7 @@ import { FooterComponent } from './footer/footer.component';
   ],
   imports: [
     CommonModule,
+    MatIconModule,
     AppRoutingModule
   ]
 })

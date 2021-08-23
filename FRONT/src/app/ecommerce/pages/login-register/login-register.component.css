@@ -1,4 +1,5 @@
 
+
 .contact-d{
     background-color: #f8f8f8 ;
 }
@@ -9,15 +10,29 @@ a {
 }
   
   
-  a:hover,
-  a:active,
-  a:focus {
+a:hover,
+a:active,
+a:focus {
     color: #BA324F;
     outline: none;
     text-decoration: none;
-  }
+}
   
+
+h3{
+    color: #4BA3C3;
+}
   
+
+.color{
+    background: #4BA3C3;
+    color: #fff;
+}
+
+.color:hover{
+
+    background: #BA324F !important;
+}
 
 /**********************************/
 /****** Register & Login CSS ******/

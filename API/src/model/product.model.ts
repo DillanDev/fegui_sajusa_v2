@@ -1,108 +1,497 @@
 import MySQL from '../config/connection';
 import { UploadController } from '../controller/upload.controller';
 import { UploadModel } from './upload.model';
-
+import { DataI, ResponseI } from './../interface/data.interface'
 
 const MODEL = new UploadController;
 const UPLOAD = new UploadModel;
+
 export class ProductModel{
-    private Query = '';
-    private inserts =[''];
+    static Query = '';
+    static inserts =[''];
+    static result:any = '';
+    static aux: any = '';
+    static cont = 0;
 
-    public async categories(){
+    //===================
+    //      PUBLIC      |
+    //===================
 
-        this.Query = "SELECT * FROM categories";
-        return await MySQL.executeQuery(this.Query); 
-       
+    // Menú
+    static async allCategories(res:ResponseI){
+
+        try{
+
+            this.Query = "SELECT * FROM categories";
+            let result:any = await MySQL.executeQuery(this.Query); 
+            return res.status(200).json( {ok:true,categories:result});
+
+        }catch(error){
+                return res.status(400).json({
+                    ok:false,
+                    message: 'Something goes wrong!'
+                });
+        }
     }
 
-    public async products(name:string,res:any){
+    // Menú + Contenido
+    static async category(req:any, res:ResponseI){
+        try{
 
-        this.Query = "SELECT `id` FROM `categories` WHERE name='"+name+"'";
+
+            this.Query = `SELECT id,name FROM categories WHERE id = '${req.params.id}'`;
+            this.result = await MySQL.executeQuery(this.Query); 
+            if(this.result.length > 0 ){
+                if(this.result[0].constructor.name === 'RowDataPacket' ){
+                    let _aux = this.result[0].id;
+                    let aux = this.result[0].name;
+                    let page = Number(req.query.page);
+                    let limit = Number(req.query.limit);
+                    let _page = page*limit-limit
+
+                    // const startIndex = (page - 1)*limit;
+                    // const endIndex = page * limit;
+
+                    this.Query = `SELECT * FROM products WHERE categories_id = '${req.params.id}'`;
+                    this.result = await MySQL.executeQuery(this.Query); 
+                    let cont = 0
+                    for(let _ in this.result ) cont = cont + 1;
+
+
+                    this.Query = `
+                    SELECT * FROM products 
+                    WHERE categories_id = '${req.params.id}' 
+
+                    LIMIT ${limit} OFFSET ${_page}`;
+
+
+                    this.result = await MySQL.executeQuery(this.Query); 
+                    let products = this.result
+
+
+                    this.Query = `SELECT * FROM images`;
+                    this.result = await MySQL.executeQuery(this.Query);
+                    let images: any = new Array(this.result.length-1);
+
+                    for(let _ in products){
+                        this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[_].id}'`;
+                        this.result = await MySQL.executeQuery(this.Query);
+
+
+                        for(let __ in this.result){
+                            this.Query = `SELECT id,image FROM images WHERE id = '${this.result[__].images_id}'`;
+                            this.aux = await MySQL.executeQuery(this.Query);
+                            //Insertando el dato
+                            images[this.cont-1] =  { products_id: products[_].id, id: this.aux[0].id, image: this.aux[0].image};
+
+                            this.cont = this.cont + 1
+
+
+                        }
+
+
+                    }
+
+
+                    return res.status(200).json({
+                        ok:true,
+                        page,
+                        totalItems: cont,
+                        id:_aux,
+                        categories_id:aux,
+                        products,
+                        products_images:images
+                    });
+                }
+            }else{
+                return res.status(404).json({
+                    ok:false,
+                    message: 'Category not found!'
+                });
+            }
+            
+        }catch(error){
+            return res.status(400).json({
+                    ok:false,
+                    message: 'Something goes wrong!'
+                });
+        }
+    }
+
+    // Busqueda + sugerencias
+    static async searchShort(name:string, res:ResponseI){
+        this.Query = `SELECT id,name FROM products WHERE name LIKE '%${name}%' LIMIT 4`;
         let result:any = await MySQL.executeQuery(this.Query); 
-        result[0].id
-        this.Query = "SELECT * FROM `products` WHERE category_id = '"+result[0].id+"'";
-        result = await MySQL.executeQuery(this.Query); 
-
-        res.status(200).json({
+        return res.status(200).json({
             ok:true,
-            categoria:name,
-            result
+            products:result
         });
     }
 
-    public async Byid(name:string,res:any){
-        this.Query = "SELECT * FROM `products` WHERE name LIKE '%"+name+"%'";
-        let result:any = await MySQL.executeQuery(this.Query); 
-        res.status(200).json({
-            ok:true,
-            product:result 
-        });
+    // Busqueda + Contenido
+    static async search(req:any, res:ResponseI){
+        try{
+            let page = Number(req.query.page);
+            let limit = Number(req.query.limit);
+            let _page = page*limit-limit
 
-    }
+            //Contador
+            this.Query = `SELECT * FROM products WHERE  name LIKE '%${req.params.name}%'`;
+            let result:any = await MySQL.executeQuery(this.Query); 
+            let cont = 0
+            for(let _ in result ) cont = cont + 1;
 
-    public async productsEmployee(id:string,res:any){
 
-       this.Query = `SELECT products_id FROM employeesxproducts WHERE  employees_id = '${id}'`;
+            let products:any = result
 
-       let result:any = await MySQL.executeQuery(this.Query); 
-       let name:any;
-       var x:any = [];
-       var obj:any = [];
-       for (let index = 0; index < result.length; index++) {
-            this.Query = `SELECT name FROM products WHERE id = '${result[index].products_id}'`;
-            name = await MySQL.executeQuery(this.Query); 
+            this.Query = `SELECT * FROM images`;
+            this.result = await MySQL.executeQuery(this.Query);
+            let images: any = new Array(this.result.length-1);
 
-            obj[index] = {id:'',name:''};
-            obj[index].id += `${result[index].products_id}`
-            obj[index].name += `${name[0].name}`;
-       }
-       
-       return res.status(200)
-            .json( {
+            for(let _ in products){
+                this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[_].id}'`;
+                this.result = await MySQL.executeQuery(this.Query);
+
+
+                for(let __ in this.result){
+                    this.Query = `SELECT id,image FROM images WHERE id = '${this.result[__].images_id}'`;
+                    this.aux = await MySQL.executeQuery(this.Query);
+                    //Insertando el dato
+                    images[this.cont-1] =  { products_id: products[_].id, id: this.aux[0].id, image: this.aux[0].image};
+
+                    this.cont = this.cont + 1
+
+
+                }
+
+
+            }
+
+            this.Query = `SELECT * FROM products WHERE name LIKE '%${req.params.name}%' LIMIT ${limit} OFFSET ${_page}`;
+            result = await MySQL.executeQuery(this.Query); 
+            return res.status(200).json({
                 ok:true,
-                employee_id:id, 
-                products:obj
+                page: page,
+                totalItems:cont,
+                products:result,
+                products_images:images
             });
-      
+        }catch(error){
+            return res.status(400).json({
+                    ok:false,
+                    message: 'Something goes wrong!'
+                });
+        }
     }
 
-    public async create(ID:string,name:string,body:any,res:any,req:any){
-        this.Query = `SELECT id FROM categories WHERE name='${name}'`;
-        let result:any = await MySQL.executeQuery(this.Query); 
-        
+    // Producto especifico
+    static async Byid(id:string,res:any){
+
+        try{
+            this.Query = "SELECT * FROM `products` WHERE id='"+id+"'";
+            this.result = await MySQL.executeQuery(this.Query); 
+            let _products:any = this.result;
+
+            if(this.result.length>0){
+
+                let products:any = this.result;
+
+                this.Query = `SELECT * FROM images`;
+                this.result = await MySQL.executeQuery(this.Query);
+                
+
+                this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[0].id}'`;
+                this.result = await MySQL.executeQuery(this.Query);
+                let images: any = new Array(this.result.length);
+
+                for(let _ in this.result){
+                    this.Query = `SELECT id,image FROM images WHERE id = '${this.result[_].images_id}'`;
+                    this.aux = await MySQL.executeQuery(this.Query);
+                    //Insertando el dato
+                    images[this.cont] =  { products_id: products[0].id, id: this.aux[0].id, image: this.aux[0].image};
+                    this.cont = this.cont + 1
+
+                }
+
+                return res.status(200).json({
+                    ok:true,
+                    products:_products,
+                    images: images
+                });
+            }else{
+                return res.status(404).json({
+                    ok:false,
+                    message: 'Product not found!'
+                });
+            }
+        }catch(error){
+             return res.status(400).json({
+                    ok:false,
+                    message: 'Something goes wrong!'
+                });
+        }
+    }
+
+    static random(min:any,max:any){
+          return Math.random() * (max - min) + min;
+    }
+
+    // Producto slider
+    static async productSlider(id:string,res:any){
+         try{
+             //Contador
+            this.Query = `SELECT count(id) FROM products`;
+            this.result = await MySQL.executeQuery(this.Query);
+ 
+            let cont:any = Object.values(this.result[0]);
+
+            let array = new Array(4);
+
+            for(let i = 0; i<=3; i++){
+                array[i] = Math.trunc(this.random(1,cont));
+            }
+
+
+            for(let _ in array){
+
+                this.Query = `SELECT * FROM products LIMIT ${array[_]},1 `;
+                this.result = await MySQL.executeQuery(this.Query); 
+                array[_] = this.result[0];
+            }
+                
+            let products:any = array;
+
+            if(array.length>0){
+                    
+                var contAux= 0;
+
+                let _images: any = new Array(4);
+
+                 for(let i = 0; i< 4; i++){           
+                    this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[i].id}'`;
+                    this.result = await MySQL.executeQuery(this.Query);
+                    _images[i] = this.result[0].images_id
+
+                }
+
+                for(let i = 0; i< 4; i++){
+                    this.Query = `SELECT id,image FROM images WHERE id = '${_images[i]}'`;
+                    this.aux = await MySQL.executeQuery(this.Query);
+                    //Insertando el dato            
+                    _images[i] =  { products_id: products[i].id, id: this.aux[0].id, image: this.aux[0].image};
+                }
+
+
+                return res.status(200).json({
+                    ok:true,
+                    products:products,
+                    images:_images
+                });
+            }else{
+                return res.status(404).json({
+                    ok:false,
+                    message: 'Not products in stock!'
+                });
+            }
+        }catch(error){
+             return res.status(400).json({
+                    ok:false,
+                    message: 'Something goes wrong!'
+                });
+        }
+    }
+
+
+    //===================
+    //       ADMIN      |
+    //===================
+
+
+    // Categoría!
+    static async createCategory(req:any, res:ResponseI){
+        try {
+
+            this.Query = `SELECT id,name FROM categories WHERE name = '${req.body.name}'`;
+            this.result = await MySQL.executeQuery(this.Query); 
+
+            if(this.result.length > 0 ){
+                if(this.result[0].constructor.name === 'RowDataPacket'){
+                    return res.status(406).json({
+                        ok:false,
+                        id: this.result[0].id,
+                        categories: this.result[0].name,
+                        message: 'Name duplicate!'
+                    });
+                }
+            }
+
+
+            this.Query = `INSERT INTO categories(name) VALUES ('${req.body.name}')`;
+            this.result = await MySQL.executeQuery(this.Query); 
+
+            if(this.result.constructor.name === 'OkPacket'){
+                this.Query = `SELECT id,name FROM categories WHERE name = '${req.body.name}'`;
+                this.result = await MySQL.executeQuery(this.Query); 
+                return res.status(200).json({
+                    ok:true,
+                    id: this.result[0].id,
+                    categories: this.result[0].name,                    
+                    message: 'Success!' 
+                });
+            }
+            
+
+        } catch (error) {
+            return res.status(400).json({
+                    ok:false,
+                    message: 'Something goes wrong!'
+                });
+        }
+    }   
+
+    static async updateCategory(req:any, res:ResponseI){
+        try {
+
+            this.Query = `SELECT id,name FROM categories WHERE name = '${req.body.name}'`;
+            this.result = await MySQL.executeQuery(this.Query); 
+
+            if(this.result.length > 0 ){
+                if(this.result[0].constructor.name === 'RowDataPacket'){
+                    return res.status(406).json({
+                        ok:false,
+                        id: this.result.id,
+                        categories: this.result.name,
+                        message: 'Name duplicate!'
+                    });
+                }
+            }
+
+
+            this.Query = `UPDATE categories SET name='${req.body.name}'  WHERE id='${req.params.id}'`;
+            this.result = await MySQL.executeQuery(this.Query); 
+
+            if(this.result.constructor.name === 'OkPacket'){
+                this.Query = `SELECT id,name FROM categories WHERE name = '${req.body.name}'`;
+                this.result = await MySQL.executeQuery(this.Query);
+
+                return res.status(200).json({
+                    ok:true,
+                    id: this.result[0].id,
+                    categories: this.result[0].name,
+                    message: 'Success!' 
+                });
+            }
+            
+
+        } catch (error) {
+            return res.status(400).json({
+                    ok:false,
+                    message: 'Something goes wrong!'
+            });
+        }
+    }   
+
+    static async deleteCategory(req:any, res:ResponseI){
+        try {
+
+            this.Query = `SELECT id,name FROM categories WHERE id = '${req.params.id}'`;
+            this.result = await MySQL.executeQuery(this.Query); 
+            let aux: any = this.result;
+            if(this.result.length > 0 ){
+                if(this.result[0].constructor.name === 'RowDataPacket'){
+                    this.Query = `DELETE FROM categories WHERE id= '${req.params.id}'`;
+                    this.result = await MySQL.executeQuery(this.Query); 
+
+                    return res.status(200).json({
+                        ok:true,
+                        id: aux.id,
+                        categories: aux.name,
+                        message: 'Element delete!'
+                    });
+                }
+            }else{
+                    return res.status(404).json({
+                        ok:false,
+                        message: 'Element not found!'
+                    });
+                }
+
+
+        } catch (error) {
+            return res.status(400).json({
+                    ok:false,
+                    message: 'Something goes wrong!'
+                });
+        }
+    }   
+
+    // Producto!
+    static async createProduct(req:any,res:any){
+
+        this.Query = `SELECT id,name FROM categories WHERE id='${req.params.id}'`;
+        this.result = await MySQL.executeQuery(this.Query);  
+
+        const categories_id:string = this.result[0].id;
+        const categories_name:string = this.result[0].name;
+
         this.Query =`
             INSERT INTO 
-            products(category_id, discount, inventory, sku, name, price, weight, shortDesc, longDesc) 
-            VALUES (?,?,?,?,?,?,?,?,?)`;
-            this.inserts = [`${result[0].id}`,`${body.discount}`,`${body.inventory}`,`${body.sku}`,`${body.name}`,`${body.price}`,`${body.weight}`,`${body.shortDesc}`,`${body.longDesc}`];
-            this.Query = MySQL.instance.cnn.format(this.Query,this.inserts);
-        result = await MySQL.executeQuery(this.Query); 
+            products(categories_id, discount, inventory, name, price, weight, description) 
+            VALUES (?,?,?,?,?,?,?)`;
 
-        this.Query = `SELECT id FROM products WHERE name = '${body.name}'`;
-        let id:any = await MySQL.executeQuery(this.Query); 
+        let discount:any = req.body.discount;
 
-        this.Query = ` INSERT INTO employeesxproducts(employees_id, products_id) VALUES ('${ID}','${id[id.length-1].id}') `;
-        result = await MySQL.executeQuery(this.Query);
-        
-        await MODEL.load(req,res,'products',id[id.length-1].id);
+        if(discount.charAt(discount.length-1) === '%' ){
+            discount = discount.replace("%","");
+            discount = Number(discount);
+            discount = discount/100;
+        }else if (discount > 1){
+            discount = discount/100;
+        }
 
+        this.inserts = [`${categories_id}`,`${discount}`,`${req.body.inventory}`,`${req.body.name}`,`${req.body.price}`,`${req.body.weight}`,`${req.body.description}`];
+        this.Query = MySQL.instance.cnn.format(this.Query,this.inserts);
+        this.result = await MySQL.executeQuery(this.Query); 
+
+        this.Query = `SELECT id,name FROM products WHERE id = '${this.result.insertId}'`;
+        this.result= await MySQL.executeQuery(this.Query); 
+
+        const products_id:string = this.result[0].id;
+        const products_name:string = this.result[0].name;
+        const sku:string = (categories_name.charAt(0) + categories_name.charAt(1) + categories_id +"-"+ products_id ).toUpperCase();
+
+        this.Query = `UPDATE products SET sku='${sku}' WHERE id='${products_id}'`;
+        this.result= await MySQL.executeQuery(this.Query); 
+
+        if(req.files.files.length){
+            for(let __ in req.files.files){
+                await MODEL.load(req,res,'products',products_id,req.files.files[__]);
+
+            }
+         }else{   
+
+            await MODEL.load(req,res,'products',products_id,req.files.files);
+
+        }
 
         return  res.status(200)
                 .json( {
                     ok:true,
                     message:'Datos guardados correctamente'
                 });
-
     }
 
-    public async update(body:any,id:any,name:string,res:any,req:any){
-        try {
-            this.Query = `SELECT id FROM categories WHERE name='${name}'`;
-            let result:any = await MySQL.executeQuery(this.Query); 
-            
-            var i = 0;
+    static async updateProduct(res:any,req:any){
+        //await ProductModel.updateProduct(req.body,req.params.id,req.params.name,res,req);
+        //public async updateProduct(body:any,id:any,name:string,res:any,req:any){
 
+        var body = req.body;
+        var id = req.params.id;
+
+        try {
+
+
+            var i = 0;
             for (var value in body) {
                 this.inserts[i] = '';
                 this.inserts[i] += value;
@@ -111,181 +500,79 @@ export class ProductModel{
                 this.inserts[i] += body[value];
                 i++;
             }
-
-            this.Query =` UPDATE products SET category_id='${result[0].id}'`;
-
+            this.Query =` UPDATE products SET `;
             for (let i =1 ; i<=Object.keys(body).length;i++){
                 this.Query +=',??=?';
             }
-            this.Query += ` WHERE id = ${id}`; 
+
+            this.Query += ` WHERE id = '${id}'`; 
             this.Query = MySQL.instance.cnn.format(this.Query,this.inserts);
             await MySQL.executeQuery(this.Query);
+
+
             if(req.files){
-                await MODEL.load(req,res,'products',id);
+                if(req.files.files.length){
+                    for(let __ in req.files.files){
+                        await MODEL.load(req,res,'products',id,req.files.files[__]);
+
+                    }
+                }else{   
+
+                    await MODEL.load(req,res,'products',id,req.files.files);
+
+                }
             }
 
 
-            return  res.status(200)
-                    .json( {
+            return  res.status(200).json( {
                         ok:true,
                         message:'Datos actualizados correctamente'
                     });
-            // result = await MySQL.executeQuery(this.Query); 
+
         } catch (error) {
-            return  res.status(404)
+            return  res.status(400)
                     .json( {
-                        ok:true,
-                        error
+                        ok:false,
+                        message:'Something goes wrong!'
                     });
         }
-        
     }
 
-    public async delete(id:string,res:any){
+    static async deleteProduct(id:string,res:any){
         try {
 
-            this.Query = `DELETE FROM employeesxproducts WHERE products_id = '${id}'`;
-            await MySQL.executeQuery(this.Query); 
+            //Seleccionando todas las imagenes
+            this.Query = `SELECT images_id FROM products_images WHERE products_id = '${id}'`;
+            this.result = await MySQL.executeQuery(this.Query); 
+            let images_id:any =this.result
 
-            this.Query = `SELECT  image FROM products WHERE id = '${id}'`;
-            let result:any = await MySQL.executeQuery(this.Query);    
+
+            //Borrando imagenes de la tabla images!
+            for(let _ in images_id){
+                this.Query = `SELECT image FROM images WHERE id = '${images_id[_].images_id}'`;
+                this.result = await MySQL.executeQuery(this.Query); 
+                UPLOAD.borraArchivo(this.result[0].image,'products');
+                this.Query = `DELETE FROM images WHERE id = '${images_id[_].images_id}'`;
+                await MySQL.executeQuery(this.Query); 
+
+            }
 
             this.Query = `DELETE FROM products WHERE id = '${id}'`;
             await MySQL.executeQuery(this.Query);
 
-
-            UPLOAD.borraArchivo(result[0].image,'products');
             return res.status(200)
             .json( {
                 ok:true,
                 message:'Datos eliminados correctamente'
             });
         } catch (error) {
-            return  res.status(404)
+            return  res.status(400)
                     .json( {
                         ok:false,
-                        error
+                        message:'Something goes wrong!'
                     });
         }
-        
-    
     }
 
-    //Creando un carrito
-    public async cart(id:string,quantity:any,res:any){
-
-        this.Query = "SELECT `quantity` FROM `products` WHERE id='"+id+"'";
-        let q:any = await MySQL.executeQuery(this.Query); 
-
-        if ( q[0].quantity< Number(quantity)){
-            return res.status(400).json({ok:false,message:'Sobre pasa lo que hay en el inventario'})
-        }
-
-        this.Query = "SELECT `products_id` FROM `cart` WHERE products_id='"+id+"'";
-        q = await MySQL.executeQuery(this.Query); 
-        try {
-            if(q[0].constructor.name == 'RowDataPacket'){
-                this.Query='UPDATE `cart` SET `quantity`='+quantity+' WHERE products_id='+id+'';
-                await MySQL.executeQuery(this.Query); 
-                return res.status(200).json({
-                    ok:true,
-                    message:'Se actualizo correctamente'
-    
-                });
-            }
-        } catch (error) {
-        
-            this.Query='INSERT INTO `cart`(`products_id`, `quantity`) VALUES ('+id+','+quantity+')';
-            await MySQL.executeQuery(this.Query); 
-            return res.status(200).json({
-                ok:true,
-                message:'Se creo correctamente'
-
-            }); 
-        }
-        
-        
-        
-
-
-       
-        
-        //OkPacket
-    }
-
-    public async eliminateCart(id:string,res:any){
-
-        try {
-            this.Query = "SELECT `products_id` FROM `cart` WHERE products_id = '"+id+"'";
-            let result:any = await MySQL.executeQuery(this.Query);
-
-            if(result[0].constructor.name === 'RowDataPacket'){
-                this.Query = "DELETE FROM `cart` WHERE products_id='"+id+"'";
-                result = await MySQL.executeQuery(this.Query);
-                return res.status(200).json({
-                    ok:true,
-                    message:'Se elimino correctamente'
-        
-                });
-            }
-        } catch (error) {
-            return res.status(404).json({
-                ok:false,
-                message:'No se encontro el carrito'
-    
-            });
-        }
-        
-        
-       
-    }
-
-    //Shopping
-    public async shopping(id:string,res:any){
-        try {
-            this.Query = "SELECT `products_id` FROM `customersxproducts` WHERE customers_id='"+id+"'";
-            var result:any = await MySQL.executeQuery(this.Query);
-            var price:any;
-            var quantity:any;
-            var x:any = [];
-            var total:number =0 ;
-            for (let index = 0; index < result.length; index++) {
-                this.Query = `SELECT price FROM products WHERE id = '${result[index].products_id}'`;
-                price = await MySQL.executeQuery(this.Query); 
-                this.Query = "SELECT `quantity` FROM `cart` WHERE products_id = '"+result[index].products_id+"'" 
-                quantity = await MySQL.executeQuery(this.Query); 
-                try {
-                    
-                    total += Number(price[0].price * quantity[0].quantity);
-                } catch (error) {
-                    total += Number(price[0].price);
-                }
-                
-            }
-            try {
-                this.Query = 'SELECT `price` FROM `shoppingseccion` WHERE `customer_id`='+id+'';
-                result = await MySQL.executeQuery(this.Query); 
-                if(result[0].constructor.name === 'RowDataPacket'){
-                    this.Query = 'UPDATE `shoppingseccion` SET `price`='+total+' WHERE `customer_id`='+id+'';
-                    result = await MySQL.executeQuery(this.Query); 
-                } 
-                return res.json({ok:true,message:'Precio actualizado correctamente'});
-
-            } catch (error) {
-                this.Query = 'INSERT INTO `shoppingseccion`(`customer_id`, `price`) VALUES ('+id+','+total+')';
-                result = await MySQL.executeQuery(this.Query); 
-                return res.json({ok:true,message:'Precio ingresado correctamente'});
-
-            }
-
-
-        } catch (error) {
-            return res.status(400).json({ok:false,error});
-            
-        }
-        
-
-
-    }
     
 }

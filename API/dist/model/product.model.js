@@ -19,78 +19,394 @@ const upload_model_1 = require("./upload.model");
 const MODEL = new upload_controller_1.UploadController;
 const UPLOAD = new upload_model_1.UploadModel;
 class ProductModel {
-    constructor() {
-        this.Query = '';
-        this.inserts = [''];
-    }
-    categories() {
+    //===================
+    //      PUBLIC      |
+    //===================
+    // Menú
+    static allCategories(res) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.Query = "SELECT * FROM categories";
-            return yield connection_1.default.executeQuery(this.Query);
-        });
-    }
-    products(name, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.Query = "SELECT `id` FROM `categories` WHERE name='" + name + "'";
-            let result = yield connection_1.default.executeQuery(this.Query);
-            result[0].id;
-            this.Query = "SELECT * FROM `products` WHERE category_id = '" + result[0].id + "'";
-            result = yield connection_1.default.executeQuery(this.Query);
-            res.status(200).json({
-                ok: true,
-                categoria: name,
-                result
-            });
-        });
-    }
-    Byid(name, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.Query = "SELECT * FROM `products` WHERE name LIKE '%" + name + "%'";
-            let result = yield connection_1.default.executeQuery(this.Query);
-            res.status(200).json({
-                ok: true,
-                product: result
-            });
-        });
-    }
-    productsEmployee(id, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.Query = `SELECT products_id FROM employeesxproducts WHERE  employees_id = '${id}'`;
-            let result = yield connection_1.default.executeQuery(this.Query);
-            let name;
-            var x = [];
-            var obj = [];
-            for (let index = 0; index < result.length; index++) {
-                this.Query = `SELECT name FROM products WHERE id = '${result[index].products_id}'`;
-                name = yield connection_1.default.executeQuery(this.Query);
-                obj[index] = { id: '', name: '' };
-                obj[index].id += `${result[index].products_id}`;
-                obj[index].name += `${name[0].name}`;
+            try {
+                this.Query = "SELECT * FROM categories";
+                let result = yield connection_1.default.executeQuery(this.Query);
+                return res.status(200).json({ ok: true, categories: result });
             }
-            return res.status(200)
-                .json({
+            catch (error) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Something goes wrong!'
+                });
+            }
+        });
+    }
+    // Menú + Contenido
+    static category(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                this.Query = `SELECT id,name FROM categories WHERE id = '${req.params.id}'`;
+                this.result = yield connection_1.default.executeQuery(this.Query);
+                if (this.result.length > 0) {
+                    if (this.result[0].constructor.name === 'RowDataPacket') {
+                        let _aux = this.result[0].id;
+                        let aux = this.result[0].name;
+                        let page = Number(req.query.page);
+                        let limit = Number(req.query.limit);
+                        let _page = page * limit - limit;
+                        // const startIndex = (page - 1)*limit;
+                        // const endIndex = page * limit;
+                        this.Query = `SELECT * FROM products WHERE categories_id = '${req.params.id}'`;
+                        this.result = yield connection_1.default.executeQuery(this.Query);
+                        let cont = 0;
+                        for (let _ in this.result)
+                            cont = cont + 1;
+                        this.Query = `
+                    SELECT * FROM products 
+                    WHERE categories_id = '${req.params.id}' 
+
+                    LIMIT ${limit} OFFSET ${_page}`;
+                        this.result = yield connection_1.default.executeQuery(this.Query);
+                        let products = this.result;
+                        this.Query = `SELECT * FROM images`;
+                        this.result = yield connection_1.default.executeQuery(this.Query);
+                        let images = new Array(this.result.length - 1);
+                        for (let _ in products) {
+                            this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[_].id}'`;
+                            this.result = yield connection_1.default.executeQuery(this.Query);
+                            for (let __ in this.result) {
+                                this.Query = `SELECT id,image FROM images WHERE id = '${this.result[__].images_id}'`;
+                                this.aux = yield connection_1.default.executeQuery(this.Query);
+                                //Insertando el dato
+                                images[this.cont - 1] = { products_id: products[_].id, id: this.aux[0].id, image: this.aux[0].image };
+                                this.cont = this.cont + 1;
+                            }
+                        }
+                        return res.status(200).json({
+                            ok: true,
+                            page,
+                            totalItems: cont,
+                            id: _aux,
+                            categories_id: aux,
+                            products,
+                            products_images: images
+                        });
+                    }
+                }
+                else {
+                    return res.status(404).json({
+                        ok: false,
+                        message: 'Category not found!'
+                    });
+                }
+            }
+            catch (error) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Something goes wrong!'
+                });
+            }
+        });
+    }
+    // Busqueda + sugerencias
+    static searchShort(name, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.Query = `SELECT id,name FROM products WHERE name LIKE '%${name}%' LIMIT 4`;
+            let result = yield connection_1.default.executeQuery(this.Query);
+            return res.status(200).json({
                 ok: true,
-                employee_id: id,
-                products: obj
+                products: result
             });
         });
     }
-    create(ID, name, body, res, req) {
+    // Busqueda + Contenido
+    static search(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.Query = `SELECT id FROM categories WHERE name='${name}'`;
-            let result = yield connection_1.default.executeQuery(this.Query);
+            try {
+                let page = Number(req.query.page);
+                let limit = Number(req.query.limit);
+                let _page = page * limit - limit;
+                //Contador
+                this.Query = `SELECT * FROM products WHERE  name LIKE '%${req.params.name}%'`;
+                let result = yield connection_1.default.executeQuery(this.Query);
+                let cont = 0;
+                for (let _ in result)
+                    cont = cont + 1;
+                let products = result;
+                this.Query = `SELECT * FROM images`;
+                this.result = yield connection_1.default.executeQuery(this.Query);
+                let images = new Array(this.result.length - 1);
+                for (let _ in products) {
+                    this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[_].id}'`;
+                    this.result = yield connection_1.default.executeQuery(this.Query);
+                    for (let __ in this.result) {
+                        this.Query = `SELECT id,image FROM images WHERE id = '${this.result[__].images_id}'`;
+                        this.aux = yield connection_1.default.executeQuery(this.Query);
+                        //Insertando el dato
+                        images[this.cont - 1] = { products_id: products[_].id, id: this.aux[0].id, image: this.aux[0].image };
+                        this.cont = this.cont + 1;
+                    }
+                }
+                this.Query = `SELECT * FROM products WHERE name LIKE '%${req.params.name}%' LIMIT ${limit} OFFSET ${_page}`;
+                result = yield connection_1.default.executeQuery(this.Query);
+                return res.status(200).json({
+                    ok: true,
+                    page: page,
+                    totalItems: cont,
+                    products: result,
+                    products_images: images
+                });
+            }
+            catch (error) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Something goes wrong!'
+                });
+            }
+        });
+    }
+    // Producto especifico
+    static Byid(id, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                this.Query = "SELECT * FROM `products` WHERE id='" + id + "'";
+                this.result = yield connection_1.default.executeQuery(this.Query);
+                let _products = this.result;
+                if (this.result.length > 0) {
+                    let products = this.result;
+                    this.Query = `SELECT * FROM images`;
+                    this.result = yield connection_1.default.executeQuery(this.Query);
+                    this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[0].id}'`;
+                    this.result = yield connection_1.default.executeQuery(this.Query);
+                    let images = new Array(this.result.length);
+                    for (let _ in this.result) {
+                        this.Query = `SELECT id,image FROM images WHERE id = '${this.result[_].images_id}'`;
+                        this.aux = yield connection_1.default.executeQuery(this.Query);
+                        //Insertando el dato
+                        images[this.cont] = { products_id: products[0].id, id: this.aux[0].id, image: this.aux[0].image };
+                        this.cont = this.cont + 1;
+                    }
+                    return res.status(200).json({
+                        ok: true,
+                        products: _products,
+                        images: images
+                    });
+                }
+                else {
+                    return res.status(404).json({
+                        ok: false,
+                        message: 'Product not found!'
+                    });
+                }
+            }
+            catch (error) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Something goes wrong!'
+                });
+            }
+        });
+    }
+    static random(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+    // Producto slider
+    static productSlider(id, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                //Contador
+                this.Query = `SELECT count(id) FROM products`;
+                this.result = yield connection_1.default.executeQuery(this.Query);
+                let cont = Object.values(this.result[0]);
+                let array = new Array(4);
+                for (let i = 0; i <= 3; i++) {
+                    array[i] = Math.trunc(this.random(1, cont));
+                }
+                for (let _ in array) {
+                    this.Query = `SELECT * FROM products LIMIT ${array[_]},1 `;
+                    this.result = yield connection_1.default.executeQuery(this.Query);
+                    array[_] = this.result[0];
+                }
+                let products = array;
+                if (array.length > 0) {
+                    var contAux = 0;
+                    let _images = new Array(4);
+                    for (let i = 0; i < 4; i++) {
+                        this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[i].id}'`;
+                        this.result = yield connection_1.default.executeQuery(this.Query);
+                        _images[i] = this.result[0].images_id;
+                    }
+                    for (let i = 0; i < 4; i++) {
+                        this.Query = `SELECT id,image FROM images WHERE id = '${_images[i]}'`;
+                        this.aux = yield connection_1.default.executeQuery(this.Query);
+                        //Insertando el dato            
+                        _images[i] = { products_id: products[i].id, id: this.aux[0].id, image: this.aux[0].image };
+                    }
+                    return res.status(200).json({
+                        ok: true,
+                        products: products,
+                        images: _images
+                    });
+                }
+                else {
+                    return res.status(404).json({
+                        ok: false,
+                        message: 'Not products in stock!'
+                    });
+                }
+            }
+            catch (error) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Something goes wrong!'
+                });
+            }
+        });
+    }
+    //===================
+    //       ADMIN      |
+    //===================
+    // Categoría!
+    static createCategory(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                this.Query = `SELECT id,name FROM categories WHERE name = '${req.body.name}'`;
+                this.result = yield connection_1.default.executeQuery(this.Query);
+                if (this.result.length > 0) {
+                    if (this.result[0].constructor.name === 'RowDataPacket') {
+                        return res.status(406).json({
+                            ok: false,
+                            id: this.result[0].id,
+                            categories: this.result[0].name,
+                            message: 'Name duplicate!'
+                        });
+                    }
+                }
+                this.Query = `INSERT INTO categories(name) VALUES ('${req.body.name}')`;
+                this.result = yield connection_1.default.executeQuery(this.Query);
+                if (this.result.constructor.name === 'OkPacket') {
+                    this.Query = `SELECT id,name FROM categories WHERE name = '${req.body.name}'`;
+                    this.result = yield connection_1.default.executeQuery(this.Query);
+                    return res.status(200).json({
+                        ok: true,
+                        id: this.result[0].id,
+                        categories: this.result[0].name,
+                        message: 'Success!'
+                    });
+                }
+            }
+            catch (error) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Something goes wrong!'
+                });
+            }
+        });
+    }
+    static updateCategory(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                this.Query = `SELECT id,name FROM categories WHERE name = '${req.body.name}'`;
+                this.result = yield connection_1.default.executeQuery(this.Query);
+                if (this.result.length > 0) {
+                    if (this.result[0].constructor.name === 'RowDataPacket') {
+                        return res.status(406).json({
+                            ok: false,
+                            id: this.result.id,
+                            categories: this.result.name,
+                            message: 'Name duplicate!'
+                        });
+                    }
+                }
+                this.Query = `UPDATE categories SET name='${req.body.name}'  WHERE id='${req.params.id}'`;
+                this.result = yield connection_1.default.executeQuery(this.Query);
+                if (this.result.constructor.name === 'OkPacket') {
+                    this.Query = `SELECT id,name FROM categories WHERE name = '${req.body.name}'`;
+                    this.result = yield connection_1.default.executeQuery(this.Query);
+                    return res.status(200).json({
+                        ok: true,
+                        id: this.result[0].id,
+                        categories: this.result[0].name,
+                        message: 'Success!'
+                    });
+                }
+            }
+            catch (error) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Something goes wrong!'
+                });
+            }
+        });
+    }
+    static deleteCategory(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                this.Query = `SELECT id,name FROM categories WHERE id = '${req.params.id}'`;
+                this.result = yield connection_1.default.executeQuery(this.Query);
+                let aux = this.result;
+                if (this.result.length > 0) {
+                    if (this.result[0].constructor.name === 'RowDataPacket') {
+                        this.Query = `DELETE FROM categories WHERE id= '${req.params.id}'`;
+                        this.result = yield connection_1.default.executeQuery(this.Query);
+                        return res.status(200).json({
+                            ok: true,
+                            id: aux.id,
+                            categories: aux.name,
+                            message: 'Element delete!'
+                        });
+                    }
+                }
+                else {
+                    return res.status(404).json({
+                        ok: false,
+                        message: 'Element not found!'
+                    });
+                }
+            }
+            catch (error) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Something goes wrong!'
+                });
+            }
+        });
+    }
+    // Producto!
+    static createProduct(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.Query = `SELECT id,name FROM categories WHERE id='${req.params.id}'`;
+            this.result = yield connection_1.default.executeQuery(this.Query);
+            const categories_id = this.result[0].id;
+            const categories_name = this.result[0].name;
             this.Query = `
             INSERT INTO 
-            products(category_id, discount, inventory, sku, name, price, weight, shortDesc, longDesc) 
-            VALUES (?,?,?,?,?,?,?,?,?)`;
-            this.inserts = [`${result[0].id}`, `${body.discount}`, `${body.inventory}`, `${body.sku}`, `${body.name}`, `${body.price}`, `${body.weight}`, `${body.shortDesc}`, `${body.longDesc}`];
+            products(categories_id, discount, inventory, name, price, weight, description) 
+            VALUES (?,?,?,?,?,?,?)`;
+            let discount = req.body.discount;
+            if (discount.charAt(discount.length - 1) === '%') {
+                discount = discount.replace("%", "");
+                discount = Number(discount);
+                discount = discount / 100;
+            }
+            else if (discount > 1) {
+                discount = discount / 100;
+            }
+            this.inserts = [`${categories_id}`, `${discount}`, `${req.body.inventory}`, `${req.body.name}`, `${req.body.price}`, `${req.body.weight}`, `${req.body.description}`];
             this.Query = connection_1.default.instance.cnn.format(this.Query, this.inserts);
-            result = yield connection_1.default.executeQuery(this.Query);
-            this.Query = `SELECT id FROM products WHERE name = '${body.name}'`;
-            let id = yield connection_1.default.executeQuery(this.Query);
-            this.Query = ` INSERT INTO employeesxproducts(employees_id, products_id) VALUES ('${ID}','${id[id.length - 1].id}') `;
-            result = yield connection_1.default.executeQuery(this.Query);
-            yield MODEL.load(req, res, 'products', id[id.length - 1].id);
+            this.result = yield connection_1.default.executeQuery(this.Query);
+            this.Query = `SELECT id,name FROM products WHERE id = '${this.result.insertId}'`;
+            this.result = yield connection_1.default.executeQuery(this.Query);
+            const products_id = this.result[0].id;
+            const products_name = this.result[0].name;
+            const sku = (categories_name.charAt(0) + categories_name.charAt(1) + categories_id + "-" + products_id).toUpperCase();
+            this.Query = `UPDATE products SET sku='${sku}' WHERE id='${products_id}'`;
+            this.result = yield connection_1.default.executeQuery(this.Query);
+            if (req.files.files.length) {
+                for (let __ in req.files.files) {
+                    yield MODEL.load(req, res, 'products', products_id, req.files.files[__]);
+                }
+            }
+            else {
+                yield MODEL.load(req, res, 'products', products_id, req.files.files);
+            }
             return res.status(200)
                 .json({
                 ok: true,
@@ -98,11 +414,13 @@ class ProductModel {
             });
         });
     }
-    update(body, id, name, res, req) {
+    static updateProduct(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
+            //await ProductModel.updateProduct(req.body,req.params.id,req.params.name,res,req);
+            //public async updateProduct(body:any,id:any,name:string,res:any,req:any){
+            var body = req.body;
+            var id = req.params.id;
             try {
-                this.Query = `SELECT id FROM categories WHERE name='${name}'`;
-                let result = yield connection_1.default.executeQuery(this.Query);
                 var i = 0;
                 for (var value in body) {
                     this.inserts[i] = '';
@@ -112,42 +430,54 @@ class ProductModel {
                     this.inserts[i] += body[value];
                     i++;
                 }
-                this.Query = ` UPDATE products SET category_id='${result[0].id}'`;
+                this.Query = ` UPDATE products SET `;
                 for (let i = 1; i <= Object.keys(body).length; i++) {
                     this.Query += ',??=?';
                 }
-                this.Query += ` WHERE id = ${id}`;
+                this.Query += ` WHERE id = '${id}'`;
                 this.Query = connection_1.default.instance.cnn.format(this.Query, this.inserts);
                 yield connection_1.default.executeQuery(this.Query);
                 if (req.files) {
-                    yield MODEL.load(req, res, 'products', id);
+                    if (req.files.files.length) {
+                        for (let __ in req.files.files) {
+                            yield MODEL.load(req, res, 'products', id, req.files.files[__]);
+                        }
+                    }
+                    else {
+                        yield MODEL.load(req, res, 'products', id, req.files.files);
+                    }
                 }
-                return res.status(200)
-                    .json({
+                return res.status(200).json({
                     ok: true,
                     message: 'Datos actualizados correctamente'
                 });
-                // result = await MySQL.executeQuery(this.Query); 
             }
             catch (error) {
-                return res.status(404)
+                return res.status(400)
                     .json({
-                    ok: true,
-                    error
+                    ok: false,
+                    message: 'Something goes wrong!'
                 });
             }
         });
     }
-    delete(id, res) {
+    static deleteProduct(id, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                this.Query = `DELETE FROM employeesxproducts WHERE products_id = '${id}'`;
-                yield connection_1.default.executeQuery(this.Query);
-                this.Query = `SELECT  image FROM products WHERE id = '${id}'`;
-                let result = yield connection_1.default.executeQuery(this.Query);
+                //Seleccionando todas las imagenes
+                this.Query = `SELECT images_id FROM products_images WHERE products_id = '${id}'`;
+                this.result = yield connection_1.default.executeQuery(this.Query);
+                let images_id = this.result;
+                //Borrando imagenes de la tabla images!
+                for (let _ in images_id) {
+                    this.Query = `SELECT image FROM images WHERE id = '${images_id[_].images_id}'`;
+                    this.result = yield connection_1.default.executeQuery(this.Query);
+                    UPLOAD.borraArchivo(this.result[0].image, 'products');
+                    this.Query = `DELETE FROM images WHERE id = '${images_id[_].images_id}'`;
+                    yield connection_1.default.executeQuery(this.Query);
+                }
                 this.Query = `DELETE FROM products WHERE id = '${id}'`;
                 yield connection_1.default.executeQuery(this.Query);
-                UPLOAD.borraArchivo(result[0].image, 'products');
                 return res.status(200)
                     .json({
                     ok: true,
@@ -155,108 +485,18 @@ class ProductModel {
                 });
             }
             catch (error) {
-                return res.status(404)
+                return res.status(400)
                     .json({
                     ok: false,
-                    error
+                    message: 'Something goes wrong!'
                 });
-            }
-        });
-    }
-    //Creando un carrito
-    cart(id, quantity, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.Query = "SELECT `quantity` FROM `products` WHERE id='" + id + "'";
-            let q = yield connection_1.default.executeQuery(this.Query);
-            if (q[0].quantity < Number(quantity)) {
-                return res.status(400).json({ ok: false, message: 'Sobre pasa lo que hay en el inventario' });
-            }
-            this.Query = "SELECT `products_id` FROM `cart` WHERE products_id='" + id + "'";
-            q = yield connection_1.default.executeQuery(this.Query);
-            try {
-                if (q[0].constructor.name == 'RowDataPacket') {
-                    this.Query = 'UPDATE `cart` SET `quantity`=' + quantity + ' WHERE products_id=' + id + '';
-                    yield connection_1.default.executeQuery(this.Query);
-                    return res.status(200).json({
-                        ok: true,
-                        message: 'Se actualizo correctamente'
-                    });
-                }
-            }
-            catch (error) {
-                this.Query = 'INSERT INTO `cart`(`products_id`, `quantity`) VALUES (' + id + ',' + quantity + ')';
-                yield connection_1.default.executeQuery(this.Query);
-                return res.status(200).json({
-                    ok: true,
-                    message: 'Se creo correctamente'
-                });
-            }
-            //OkPacket
-        });
-    }
-    eliminateCart(id, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                this.Query = "SELECT `products_id` FROM `cart` WHERE products_id = '" + id + "'";
-                let result = yield connection_1.default.executeQuery(this.Query);
-                if (result[0].constructor.name === 'RowDataPacket') {
-                    this.Query = "DELETE FROM `cart` WHERE products_id='" + id + "'";
-                    result = yield connection_1.default.executeQuery(this.Query);
-                    return res.status(200).json({
-                        ok: true,
-                        message: 'Se elimino correctamente'
-                    });
-                }
-            }
-            catch (error) {
-                return res.status(404).json({
-                    ok: false,
-                    message: 'No se encontro el carrito'
-                });
-            }
-        });
-    }
-    //Shopping
-    shopping(id, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                this.Query = "SELECT `products_id` FROM `customersxproducts` WHERE customers_id='" + id + "'";
-                var result = yield connection_1.default.executeQuery(this.Query);
-                var price;
-                var quantity;
-                var x = [];
-                var total = 0;
-                for (let index = 0; index < result.length; index++) {
-                    this.Query = `SELECT price FROM products WHERE id = '${result[index].products_id}'`;
-                    price = yield connection_1.default.executeQuery(this.Query);
-                    this.Query = "SELECT `quantity` FROM `cart` WHERE products_id = '" + result[index].products_id + "'";
-                    quantity = yield connection_1.default.executeQuery(this.Query);
-                    try {
-                        total += Number(price[0].price * quantity[0].quantity);
-                    }
-                    catch (error) {
-                        total += Number(price[0].price);
-                    }
-                }
-                try {
-                    this.Query = 'SELECT `price` FROM `shoppingseccion` WHERE `customer_id`=' + id + '';
-                    result = yield connection_1.default.executeQuery(this.Query);
-                    if (result[0].constructor.name === 'RowDataPacket') {
-                        this.Query = 'UPDATE `shoppingseccion` SET `price`=' + total + ' WHERE `customer_id`=' + id + '';
-                        result = yield connection_1.default.executeQuery(this.Query);
-                    }
-                    return res.json({ ok: true, message: 'Precio actualizado correctamente' });
-                }
-                catch (error) {
-                    this.Query = 'INSERT INTO `shoppingseccion`(`customer_id`, `price`) VALUES (' + id + ',' + total + ')';
-                    result = yield connection_1.default.executeQuery(this.Query);
-                    return res.json({ ok: true, message: 'Precio ingresado correctamente' });
-                }
-            }
-            catch (error) {
-                return res.status(400).json({ ok: false, error });
             }
         });
     }
 }
 exports.ProductModel = ProductModel;
+ProductModel.Query = '';
+ProductModel.inserts = [''];
+ProductModel.result = '';
+ProductModel.aux = '';
+ProductModel.cont = 0;

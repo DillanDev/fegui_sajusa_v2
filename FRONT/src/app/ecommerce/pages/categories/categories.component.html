@@ -6,7 +6,7 @@
               <div class="row">
                   <div class="col-lg-7">
                       <div class="row" >
-                          <div class="col-md-4 mb-2 producto" *ngFor="let product of products | 
+                          <div class="col-md-4 mb-2 producto" *ngFor="let product of products.result | 
                           paginate:  {
                               itemsPerPage: 6, 
                               currentPage: page
@@ -14,26 +14,26 @@
                             };
                             let i = index ">
                             <div class="product-item">
-                                <div class="product-title">
-                                  <a href="#">{{products[i].title}}</a>
+                              <div class="product-title">
+                                  <a href="#">{{products.result[i].name}}</a>
                                   
                                 </div>
                                 <div class="product-image">
                                   <a href="product-detail.html">
                                     <img
-                                      src="{{products[i].img}}"
+                                      src="{{products.result[i].img}}"
                                       alt="Product Image">
                                   </a>
                                   
                                 </div>
                                 <div class="product-price">
-                                  <h3><span>${{products[i].price}}</span></h3>
+                                  <h3><span>${{products.result[i].price}}</span></h3>
+                                  <a class="btn" routerLink="/producto/{{products.result[i].id+products.result[i].name}}"><i class="fa fa-shopping-cart"></i>Buy Now</a>
 
-                                  <a class="btn" routerLink="/producto/{{products[i].id+products[i].title}}"><i class="fa fa-shopping-cart"></i>Buy Now</a>
                                 </div>
                               </div>
                           
-                        </div>
+                          </div>
                           
                       </div>
                       

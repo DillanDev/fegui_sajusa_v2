@@ -1,1 +1,48 @@
-<p>article works!</p>
+<div class="contact-d  pt-4">
+  <div class="container">
+  <div class="row d-block">
+    
+    <div class="col">
+
+      <div class="portada">
+        <img src="{{article[0].port}}">
+      </div>
+
+    </div>
+
+    <div class="col">
+      
+      <div>
+        
+        <div class="itemHeader">
+
+        <!-- Date created -->
+        <div class="itemDateCreated">
+          <span class="date">
+                   {{article[0].day}}
+          </span> <br>
+          <span class="month">
+{{article[0].month}}
+          </span> 
+        </div>
+
+        <h2 class="itemTitle">
+      {{article[0].title}}
+      
+        <!-- </h3> -->
+        </h2>
+
+        <div class="itemFullText">
+        <p>
+          {{article[0].content}}
+        </p>
+           
+        </div>
+        </div>
+
+      </div>
+    </div>
+
+
+  </div>
+</div>

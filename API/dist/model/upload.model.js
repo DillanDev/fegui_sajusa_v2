@@ -19,57 +19,47 @@ const path_1 = __importDefault(require("path"));
 class UploadModel {
     constructor() {
         this.Query = '';
+        this.result = [''];
     }
-    img(id, res, name, tipe, err) {
+    img(id, res, name, tipe) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (err) {
-                this.borraArchivo(name, tipe);
-                return res.status(500).json({
-                    ok: false,
-                    err
-                });
+            // let ban = await this.find(id,tipe);
+            // if(!(ban)){
+            //      this.borraArchivo(name, tipe);
+            //      return res.status(400).json({
+            //          ok: false, message: 'Not exist!'
+            //      });
+            // }
+            // if(ban){
+            let nameViejo = yield this.findName(tipe, id);
+            if (nameViejo === '') {
+                yield this.save(id, tipe, name, res);
             }
-            let ban = yield this.find(id, tipe);
-            if (!(ban)) {
-                this.borraArchivo(name, tipe);
-                return res.status(400).json({
-                    ok: false,
-                    err: {
-                        message: 'No existe'
-                    }
-                });
+            else {
+                this.borraArchivo(nameViejo, tipe);
+                yield this.save(id, tipe, name, res);
             }
-            if (ban) {
-                let nameViejo = yield this.findName(tipe, id);
-                if (nameViejo === '') {
-                    yield this.save(id, tipe, name, res);
-                }
-                else {
-                    this.borraArchivo(nameViejo, tipe);
-                    yield this.save(id, tipe, name, res);
-                }
-            }
+            // }
         });
     }
-    find(id, tipe) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.Query = `SELECT id FROM ${tipe} WHERE id = '${id}';`;
-            let result = yield connection_1.default.executeQuery(this.Query);
-            try {
-                if (result[0].constructor.name === 'RowDataPacket') {
-                    return true;
-                }
-            }
-            catch (error) {
-                return false;
-            }
-        });
-    }
+    // public async find(id:string,tipe:string){
+    //     this.Query = `SELECT id FROM ${tipe}_images WHERE ${tipe}_id = '${id}';`
+    //     let result:any = await MySQL.executeQuery(this.Query);
+    //     try {
+    //         if(result[0].constructor.name === 'RowDataPacket' ){
+    //             return true;
+    //         }
+    //     } catch (error) {
+    //         return false;
+    //     }
+    // }
     save(id, tipe, name, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                this.Query = `UPDATE ${tipe} SET image='${name}' WHERE id = '${id}';`;
-                yield connection_1.default.executeQuery(this.Query);
+                this.Query = `INSERT INTO images(image) VALUES ('${name}')`;
+                this.result = yield connection_1.default.executeQuery(this.Query);
+                this.Query = `INSERT INTO products_images (products_id, images_id) VALUES ('${id}','${this.result.insertId}')`;
+                this.result = yield connection_1.default.executeQuery(this.Query);
                 return true;
             }
             catch (error) {
@@ -83,7 +73,9 @@ class UploadModel {
     findName(tipe, id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                this.Query = `SELECT image FROM ${tipe} WHERE id = ${id}`;
+                this.Query = `SELECT images_id FROM ${tipe}_images WHERE ${tipe}_id='${id}'`;
+                this.result = yield connection_1.default.executeQuery(this.Query);
+                this.Query = `SELECT image FROM images WHERE id = ${this.result[0].images_id}`;
                 let result = yield connection_1.default.executeQuery(this.Query);
                 return result[0].image;
             }

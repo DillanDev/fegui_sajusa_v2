@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { EcommerceService } from '../../services/ecommerce.service';
+
+
 @Component({
 
   selector: 'app-categories',
@@ -17,51 +20,20 @@ export class CategoriesComponent implements OnInit {
   page: number = 1;
 
   constructor(
-    private activatedRoute: ActivatedRoute
-  ) { 
-   
+    private activatedRoute: ActivatedRoute,
+    private _product: EcommerceService
+  ) {}
 
-  }
+    ngOnInit(): void {
+       this.activatedRoute.params.subscribe(({id})=>{ this.listproducts(id); });
+      
+    }
 
-  ngOnInit(): void {
-    this.activatedRoute.params
-    .subscribe(({id})=>{
-      if(id === 'suplementos'){
-        this.products =[
-          {
-            id: '2312343434',
-            title: "Producto 1",
-            img: "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/river-island-tienda-espan-a-1502873334.jpg?crop=0.8xw:1xh;center,top&resize=480:*",
-            price: "999",
-            desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
-          },{
-            id: '2312343435',
-            title: "Producto 2",
-            img: "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/river-island-tienda-espan-a-1502873334.jpg?crop=0.8xw:1xh;center,top&resize=480:*",
-            price: "999",
-            desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
-          }
-        ]
-      }else if(id === 'medicamentos'){
-        this.products =[
-          {
-            id: '312343435',
-            title: "Producto 3",
-            img: "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/river-island-tienda-espan-a-1502873334.jpg?crop=0.8xw:1xh;center,top&resize=480:*",
-            price: "999",
-            desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
-          },{
-            id: '312343439',
-            title: "Producto 4",
-            img: "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/river-island-tienda-espan-a-1502873334.jpg?crop=0.8xw:1xh;center,top&resize=480:*",
-            price: "999",
-            desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
-          }
-        ]
-      }
+  listproducts(name: string){
+    this._product.getlistproducts(name).subscribe(res =>{ 
+      this.products = res;
+      console.log(this.products.result[0].name)
     });
-  
-
   }
 
   

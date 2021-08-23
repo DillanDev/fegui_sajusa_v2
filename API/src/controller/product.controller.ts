@@ -2,104 +2,139 @@ import { Request,Response } from "express";
 
 import { ProductModel } from "../model/product.model";
 
-
-const MODEL = new ProductModel;
-
 export class ProductController{
 
-
-    public async categories(req:Request, res:Response){
+    public async allCategories(req:Request, res:Response){
 
         try {
-            res.status(200).json( {ok:true,categories:await MODEL.categories()});
+
+            await ProductModel.allCategories(res);
+
         } catch (error) {
-            res.status(500).json({message:"Error calling function"});
-        }
-        
+            return res.status(500).json({
+                ok:false,
+                message:"Error calling function!"});
+        }       
     }
 
-    public async products(req:Request, res:Response){
+    public async category(req:Request, res:Response){
+
         try {
-            await MODEL.products(req.params.name,res);
+
+            await ProductModel.category(req,res);
+
         } catch (error) {
-            res.status(500).json({message:"Error calling function"});
-        }
-        
+            return res.status(500).json({
+                ok:false,
+                message:"Error calling function!"});
+        } 
+    }
+
+    public async searchShort(req:Request, res:Response){
+        try {
+
+            await ProductModel.searchShort(req.params.name,res);
+
+        } catch (error) {
+            return res.status(500).json({
+                ok:false,
+                message:"Error calling function!"});
+        } 
+    }
+
+    public async search(req:Request, res:Response){
+        try {
+
+            await ProductModel.search(req,res);
+
+        } catch (error) {
+           return res.status(500).json({
+                ok:false,
+                message:"Error calling function!"});
+        } 
     }
 
     public async Byid(req:Request, res:Response){
         try {
-            await MODEL.Byid(req.params.name,res);
+            await ProductModel.Byid(req.params.id,res);
         } catch (error) {
-            res.status(500).json({message:"Error calling function"});
+           return res.status(500).json({
+                ok:false,
+                message:"Error calling function!"});
         }
-        
     }
 
-    public async listEmployee(req:Request, res:Response){
+    public async productSlider(req:Request, res:Response){
+        try {
+            await ProductModel.productSlider(req.params.id,res);
+        } catch (error) {
+            return res.status(500).json({
+                ok:false,
+                message:"Error calling function!"});
+        }
+    }
+
+    //===================
+    //       ADMIN      |
+    //===================
+
+    public async createCategory(req:Request, res:Response){
+        try {
+            await ProductModel.createCategory(req,res);
+        } catch (error) {
+            return res.status(500).json({
+                ok:false,
+                message:"Error calling function!"});
+        }
+    }   
+
+    public async updateCategory(req:Request, res:Response){
+        try {
+            await ProductModel.updateCategory(req,res);
+        } catch (error) {
+            return res.status(500).json({
+                ok:false,
+                message:"Error calling function!"});
+        }
+    }   
+
+    public async deleteCategory(req:Request, res:Response){
+        try {
+            await ProductModel.deleteCategory(req,res);
+        } catch (error) {
+            return res.status(500).json({
+                ok:false,
+                message:"Error calling function!"});
+        }
+    }   
+
+    public async createProduct(req:Request, res:Response){
+        try {
+            await ProductModel.createProduct(req,res);
+        } catch (error) {
+            res.status(500).json({
+                ok:false,
+                message:"Error calling function!"});
+        }
+    }
+
+    public async updateProduct(req:Request, res:Response){
 
         try {
-            await MODEL.productsEmployee(req.params.id,res);
+            await ProductModel.updateProduct(res,req);
         } catch (error) {
-            res.status(500).json({message:"Error calling function"});
+            res.status(500).json({
+                ok:false,
+                message:"Error calling function!"});
         }
-        
     }
 
-    public async create(req:Request, res:Response){
+    public async deleteProduct(req:Request, res:Response){
         try {
-            await MODEL.create(req.params.id,req.params.name,req.body,res,req);
+            await ProductModel.deleteProduct(req.params.id,res);
         } catch (error) {
             res.status(500).json({message:"Error calling function"});
         }
     }
 
-    public async update(req:Request, res:Response){
-
-        try {
-            await MODEL.update(req.body,req.params.id,req.params.name,res,req);
-        } catch (error) {
-            res.status(500).json({message:"Error calling function"});
-        }
-    }
-
-    public async deleteByid(req:Request, res:Response){
-        try {
-            await MODEL.delete(req.params.id,res);
-        } catch (error) {
-            res.status(500).json({message:"Error calling function"});
-        }
-    }
-
-
-    /*Carrito*/
-
-    //Creando
-    public async cart(req:Request, res:Response){
-        try {
-            await MODEL.cart(req.params.id,req.body.quantity,res);
-        } catch (error) {
-            res.status(500).json({message:"Error calling function"});
-        }
-    }
-
-    //Eliminando
-    public async eliminateCart(req:Request, res:Response){
-        try {
-            await MODEL.eliminateCart(req.params.id,res);
-        } catch (error) {
-            res.status(500).json({message:"Error calling function"});
-        }
-    }
-
-    /*Shopping*/
-
-    //Mostrando
-    public async shopping(req:Request, res:Response){
-        try {
-            await MODEL.shopping(req.params.id,res);
-        } catch (error) {
-            res.status(500).json({message:"Error calling function"});
-        }
-    }
 }

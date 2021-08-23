@@ -12,119 +12,107 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Auth = void 0;
 const auth_model_1 = require("../model/auth.model");
 const validation_1 = require("../config/validation");
-const MODEL = new auth_model_1.AuthModel();
-const VALIDATION = new validation_1.Validation();
 class Auth {
     login(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!(req.params.name == 'employees' || req.params.name == 'customers'))
-                return res.status(404).json({ ok: false, message: 'Parametro no permitido' });
-            const { email, password } = req.body;
-            if (!(email && password)) {
-                return res.json({ ok: false, message: 'Username and password required' });
-            }
             try {
-                let a = yield MODEL.login(email, password, req.params.name);
-                if (a == false) {
-                    res.json({ ok: false, message: 'Incorrect email or password!' });
+                const { email, password } = req.body;
+                if (!(email && password)) {
+                    return res.json({ ok: false, message: 'Username and password required' });
                 }
-                else if (a.b == true) {
-                    res.status(200).json({ ok: a.b, token: a.token });
-                }
+                yield auth_model_1.AuthModel.login(req.body, res);
             }
             catch (error) {
-                return res.json({ ok: false, message: 'Incorrect email or password!' });
+                return res.status(500).json({
+                    ok: false,
+                    message: 'Error internal server!'
+                });
             }
         });
     }
     register(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            let name = req.body.name || 0;
-            let surname = req.body.surname || 0;
-            let email = req.body.email || 0;
-            let telephone = req.body.telephone || 0;
-            let password = req.body.password || 0;
-            let city = req.body.city || 0;
-            let region = req.body.region || 0;
-            let zip = req.body.zip || 0;
             try {
-                if (!VALIDATION.AlonString(name, 30, 2)) {
-                    return res.status(406).json({ ok: false, message: 'Incorrect name!' });
+                if (!validation_1.createUsersValidation(req.body)) {
+                    return res.status(406).json({
+                        ok: false,
+                        message: 'Data invalid!'
+                    });
                 }
-                else if (!VALIDATION.AlonString(surname, 60, 2)) {
-                    return res.status(406).json({ ok: false, message: 'Incorrect surname!' });
-                }
-                else if (!VALIDATION.email(email, 60, 6)) {
-                    return res.status(406).json({ ok: false, message: 'Incorrect email!' });
-                }
-                else if (!VALIDATION.AlonNumber(telephone, 15, 6)) {
-                    return res.status(406).json({ ok: false, message: 'Incorrect telephone!' });
-                }
-                else if (!VALIDATION.password(password, 60, 6)) {
-                    return res.status(406).json({ ok: false, message: 'Incorrect password!' });
-                }
-                else if (!VALIDATION.AlonString(city, 30, 2)) {
-                    return res.status(406).json({ ok: false, message: 'Incorrect city!' });
-                }
-                else if (!VALIDATION.AlonString(region, 30, 2)) {
-                    return res.status(406).json({ ok: false, message: 'Incorrect region!' });
-                }
-                else if (!VALIDATION.AlonNumber(zip, 10, 4)) {
-                    return res.status(406).json({ ok: false, message: 'Incorrect zip!' });
-                }
-                else if (req.body.role) {
-                    let cad = req.body.telephone;
-                    if (cad.charAt(0) == '+') {
-                        let auxE = yield MODEL.valEmail(req.body, 'employees');
-                        let auxC = yield MODEL.valTel(req.body, 'employees');
-                        if (auxE == 'No existe el email' && auxC == 'No existe el celular') {
-                            if ((yield MODEL.employee(req.body)) !== undefined) {
-                                delete req.body.password;
-                                res.status(200).json({ ok: true, employee: req.body });
-                            }
-                            else {
-                                res.status(400).json({ ok: false, message: 'Error' });
-                            }
-                        }
-                        else if (auxE == 'Ya existe el email') {
-                            res.status(400).json({ ok: false, message: 'Ya existe el email' });
-                        }
-                        else if (auxC == 'Ya existe el celular') {
-                            res.status(400).json({ ok: false, message: 'Ya existe el celular' });
-                        }
-                    }
-                    else {
-                        res.status(400).json({ ok: false, message: 'Se solicita con indicativo de cada pais' });
-                    }
-                }
-                else if (!req.body.role) {
-                    let cad = req.body.telephone;
-                    if (cad.charAt(0) == '+') {
-                        let auxE = yield MODEL.valEmail(req.body, 'customers');
-                        let auxC = yield MODEL.valTel(req.body, 'customers');
-                        if (auxE == 'No existe el email' && auxC == 'No existe el celular') {
-                            if ((yield MODEL.customer(req.body)) !== undefined) {
-                                delete req.body.password;
-                                res.status(200).json({ ok: true, customers: req.body });
-                            }
-                            else {
-                                res.status(400).json({ ok: false, message: 'Error' });
-                            }
-                        }
-                        else if (auxE == 'Ya existe el email') {
-                            res.status(400).json({ ok: false, message: 'Ya existe el email' });
-                        }
-                        else if (auxC == 'Ya existe el celular') {
-                            res.status(400).json({ ok: false, message: 'Ya existe el celular' });
-                        }
-                    }
-                    else {
-                        res.status(400).json({ ok: false, message: 'Se solicita con indicativo de cada pais' });
-                    }
-                }
+                yield auth_model_1.AuthModel.register(req.body, res);
             }
             catch (error) {
-                return res.status(500).json({ message: 'Error internal server ' });
+                return res.status(500).json({
+                    ok: false,
+                    message: 'Error internal server '
+                });
+            }
+        });
+    }
+    changePassword(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { oldPass, newPass } = req.body;
+                if (!(oldPass && newPass)) {
+                    return res.status(406).json({
+                        ok: false,
+                        message: 'Old password and new password required!'
+                    });
+                }
+                yield auth_model_1.AuthModel.changePassword(oldPass, newPass, res);
+            }
+            catch (error) {
+                return res.status(500).json({
+                    ok: false,
+                    message: 'Error internal server '
+                });
+            }
+        });
+    }
+    forgortPassword(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { email } = req.body;
+                if (!(email)) {
+                    return res.status(406).json({
+                        ok: false,
+                        message: 'Email is required!'
+                    });
+                }
+                if (!validation_1.forgortPasswordValidation(email)) {
+                    return res.status(406).json({
+                        ok: false,
+                        message: 'Data invalid!'
+                    });
+                }
+                yield auth_model_1.AuthModel.forgortPassword(email, res);
+            }
+            catch (error) {
+                return res.status(500).json({
+                    ok: false,
+                    message: 'Error internal server '
+                });
+            }
+        });
+    }
+    createNewPassword(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { newPassword } = req.body;
+            const resetToken = req.headers.reset;
+            try {
+                if (!(newPassword && resetToken)) {
+                    return res.status(406).json({
+                        ok: false,
+                        message: 'All the fields are required!'
+                    });
+                }
+                yield auth_model_1.AuthModel.createNewPassword(resetToken, newPassword, res);
+            }
+            catch (error) {
+                return res.status(500).json({
+                    ok: false,
+                    message: 'Error internal server '
+                });
             }
         });
     }

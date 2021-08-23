@@ -13,17 +13,16 @@ exports.UploadController = void 0;
 const upload_model_1 = require("../model/upload.model");
 const MODEL = new upload_model_1.UploadModel;
 class UploadController {
-    load(req, res, tipo, id) {
+    load(req, res, tipo, id, archivo) {
         return __awaiter(this, void 0, void 0, function* () {
             // let tipo = req.params.tipo;
             // let id = req.params.id;
             if (!req.files)
-                return res.status(400).json({ ok: false, err: { message: 'No se ha seleccionado ningún archivo' } });
+                return res.status(400).json({ ok: false, message: 'No se ha seleccionado ningún archivo' });
             // Valida tipo
             let tiposValidos = ['products', 'post'];
             if (tiposValidos.indexOf(tipo) < 0)
-                return res.status(400).json({ ok: false, err: { message: 'Los tipos permitidas son ' + tiposValidos.join(', ') } });
-            let archivo = req.files.archivo;
+                return res.status(400).json({ ok: false, emessage: 'Los tipos permitidas son ' + tiposValidos.join(', ') });
             let nombreCortado = archivo.name.split('.');
             let extension = nombreCortado[nombreCortado.length - 1];
             // Extensiones permitidas
@@ -44,7 +43,7 @@ class UploadController {
                 if (err)
                     return res.status(500).json({
                         ok: false,
-                        err
+                        message: err
                     });
                 // Aqui, imagen cargada
                 if (tipo === 'post') {

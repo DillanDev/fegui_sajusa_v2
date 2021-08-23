@@ -34,7 +34,7 @@
 <div class="nav">
   <div class="container-fluid">
     <nav class="navbar navbar-expand-md bg-dark navbar-dark">
-      <a href="#" class="navbar-brand">MENU</a>
+      <a href="#" class="navbar-brand"><mat-icon>home</mat-icon></a>
       <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -42,25 +42,43 @@
       <div class="container">
         <div class="collapse navbar-collapse justify-content-end " id="navbarCollapse">
           <div class="navbar-nav">
+
+
+            <ng-container *ngIf="login()">
+              <div class="nav-item dropdown">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" ><mat-icon>person</mat-icon></a>
+              <div class="dropdown-menu">
+                <a routerLink="cuenta" class="dropdown-item">Mi Cuenta</a>
+                <a routerLink="cuenta/login" class="dropdown-item">Salir</a>
+              </div>
+              </div>
+            </ng-container>
+
+
+
             <a routerLink="inicio" class="nav-item nav-link">inicio</a>
   
-            <div class="nav-item dropdown"  >
-              <a class="nav-link dropdown-toggle" data-toggle="dropdown" >categorías</a>
+            <div class="nav-item dropdown"    (click)="categoriesList()">
+              <a class="nav-link dropdown-toggle" data-toggle="dropdown">categorías</a>
               <div class="dropdown-menu">
-                <a routerLink="/categorias/{{categories[i].content}}" class="dropdown-item" *ngFor="let category of categories; let i = index;">{{categories[i].content.charAt(0).toUpperCase()+categories[i].content.slice(1)}}</a>
+                <a routerLink="/categorias/{{categ.categories[i].id}}" class="dropdown-item" *ngFor="let _ of categ.categories; let i = index;">
+
+                {{categ.categories[i].id.charAt(0).toUpperCase()+categ.categories[i].id.slice(1)}}
+              </a>
               </div>
             </div>
   
             <a routerLink="blog" class="nav-item nav-link" >Blog</a>
-            <a routerLink="cuenta" class="nav-item nav-link">cuenta</a>
-  
-            <div class="nav-item dropdown">
-              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Más paginas</a>
-              <div class="dropdown-menu">
-                <a routerLink="/contacto" class="dropdown-item">Contáctanos</a>                
-                <a routerLink="cuenta/login" class="dropdown-item">Login & Register</a>
-              </div>
-            </div>
+
+            <a routerLink="/contacto" class="nav-item nav-link">Contáctanos</a>                
+
+
+
+
+            <ng-container *ngIf="!login()">
+                <a routerLink="cuenta/login" class="nav-item nav-link">Login & Register</a>
+            </ng-container>
+            
   
           </div>
           <!-- <div class="navbar-nav">
