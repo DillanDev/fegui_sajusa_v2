@@ -9,59 +9,60 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BlogController = void 0;
-const blog_model_1 = require("../model/blog.model");
-class BlogController {
-    /*POST*/
-    post(req, res) {
+exports.ShoppingController = void 0;
+const shopping_model_1 = require("../model/shopping.model");
+class ShoppingController {
+    cart(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield blog_model_1.BlogModel.post(req, res);
+                yield shopping_model_1.ShoppingModel.cart(req, res);
             }
             catch (error) {
-                res.status(500).json({ message: "Error calling function" });
+                res.status(500).json({
+                    ok: false,
+                    message: "Error calling function"
+                });
             }
         });
     }
-    Byid(req, res) {
+    addCart(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield blog_model_1.BlogModel.Byid(req.params.id, res);
+                yield shopping_model_1.ShoppingModel.addCart(req, res);
             }
             catch (error) {
-                res.status(500).json({ message: "Error calling function" });
+                res.status(500).json({
+                    ok: false,
+                    message: "Error calling function"
+                });
             }
         });
     }
-    createPost(req, res) {
+    updateCart(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield blog_model_1.BlogModel.createPost(req, res);
+                yield shopping_model_1.ShoppingModel.updateCart(req, res);
             }
             catch (error) {
-                res.status(500).json({ message: "Error calling function" });
+                res.status(500).json({
+                    ok: false,
+                    message: "Error calling function"
+                });
             }
         });
     }
-    updatePost(req, res) {
+    deleteCart(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield blog_model_1.BlogModel.updatePost(req, res);
+                yield shopping_model_1.ShoppingModel.deleteCart(req, res);
             }
             catch (error) {
-                res.status(500).json({ message: "Error calling function" });
-            }
-        });
-    }
-    deletePost(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                yield blog_model_1.BlogModel.deletePost(req.params.id, res);
-            }
-            catch (error) {
-                res.status(500).json({ message: "Error calling function" });
+                res.status(500).json({
+                    ok: false,
+                    message: "Error calling function"
+                });
             }
         });
     }
 }
-exports.BlogController = BlogController;
+exports.ShoppingController = ShoppingController;

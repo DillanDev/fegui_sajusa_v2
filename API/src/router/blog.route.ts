@@ -1,27 +1,27 @@
-import { Application } from "express";
+import { Application } from "express"
 
 import { BlogController } from "../controller/blog.controller";
-import { userJWT } from "../middleware/auth";
+import { userJWT,adminJWT } from "../middleware/auth";
 
 export class BlogRoute{
     
     public blogController: BlogController = new BlogController();
 
     public routes(app:Application){
-        
-       
-        
-        // /*POST*/
-        // //Mostrar todos con el contenido con la shortDesc
-        // app.get('/fegui_sajusa/api/v1/post',  this.employeeController.posts );
-        // //Mostrar uno completo sin shortDesc por id
-        // app.get('/fegui_sajusa/api/v1/post/:id',  this.employeeController.post );
-        // //Crear 
-        // app.post('/fegui_sajusa/api/v1/employees/:id/post',[userJWT],  this.employeeController.createPost );
-        // //Actualizar
-        // app.patch('/fegui_sajusa/api/v1/post/:id',[userJWTuserJWT],  this.employeeController.updatePost );
-        // //Eliminar
-        // app.delete('/fegui_sajusa/api/v1/post/:id',[userJWT],  this.employeeController.deletePost );
+
+
+        //Mostrar todos con el contenido con la shortDesc
+        app.get('/fegui_sajusa/api/v2/post',  this.blogController.post );
+        //Mostrar uno completo sin shortDesc por id
+        app.get('/fegui_sajusa/api/v2/post/:id',  this.blogController.Byid );
+
+        //===================
+        //       ADMIN      |
+        //===================
+
+        app.post('/fegui_sajusa/api/v2/users/:ID/create-post',[userJWT,adminJWT],  this.blogController.createPost );
+        app.patch('/fegui_sajusa/api/v2/users/:ID/update-post/:id',[userJWT,adminJWT],  this.blogController.updatePost );
+        app.delete('/fegui_sajusa/api/v2/post/:id',[userJWT,adminJWT],  this.blogController.deletePost );
         
       
         

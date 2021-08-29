@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const server_1 = require("./config/server");
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const APP = new server_1.App(3030);
+        const APP = new server_1.App();
         yield APP.listen();
     });
 }

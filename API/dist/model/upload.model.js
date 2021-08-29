@@ -58,7 +58,7 @@ class UploadModel {
             try {
                 this.Query = `INSERT INTO images(image) VALUES ('${name}')`;
                 this.result = yield connection_1.default.executeQuery(this.Query);
-                this.Query = `INSERT INTO products_images (products_id, images_id) VALUES ('${id}','${this.result.insertId}')`;
+                this.Query = `INSERT INTO ${tipe}_images ( ${tipe}_id, images_id) VALUES ('${id}','${this.result.insertId}')`;
                 this.result = yield connection_1.default.executeQuery(this.Query);
                 return true;
             }

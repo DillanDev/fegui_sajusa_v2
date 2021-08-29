@@ -38,6 +38,9 @@ export class App{
         this.route.ProductRoutes.routes(this.app);
         this.route.UserRoutes.routes(this.app);
         this.route.UploadRoutes.routes(this.app);
+        this.route.UploadRoutes.routes(this.app);
+        this.route.BlogRoutes.routes(this.app);
+        this.route.ShoppingRoutes.routes(this.app);
 
     }
 
