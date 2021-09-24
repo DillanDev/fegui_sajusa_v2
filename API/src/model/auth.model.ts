@@ -3,7 +3,6 @@ import bcrypt from 'bcrypt';
 
 import MySQL from '../config/connection';
 import {transporter} from '../config/mailer';
-import { DataI, ResponseI } from './../interface/data.interface'
 import { UploadController } from '../controller/upload.controller';
 import { UploadModel } from './upload.model';
 import key from "../config/key-users";
@@ -14,7 +13,7 @@ export class AuthModel{
     static Query = '';
     static inserts =[''];
 
-    static async login(data:DataI,res:ResponseI){
+    static async login(data:any,res:any){
 
          const {email,password} = data;
 
@@ -76,7 +75,7 @@ export class AuthModel{
     }
 
 
-    static async register(data:DataI,res:ResponseI){
+    static async register(data:any,res:any){
 
 
         try {
@@ -116,6 +115,29 @@ export class AuthModel{
                 }
             }
             
+            //Creando una dirección
+            this.Query = `INSERT INTO 
+
+            address(
+            calle, 
+            country, 
+            state, 
+            city, 
+            zip) 
+
+            VALUES (?,?,?,?,?)`;
+
+            
+            this.inserts  = [
+            `${data.calle}`,
+            `${data.country}`,
+            `${data.state}`,
+            `${data.city}`,
+            `${data.zip}`];
+
+
+            this.Query = MySQL.instance.cnn.format(this.Query,this.inserts );
+            rows = await MySQL.executeQuery(this.Query);
 
             data.password = await bcrypt.hash(data.password,10);
             this.Query =`
@@ -128,12 +150,18 @@ export class AuthModel{
             email,
             telephone, 
             password, 
-            role, 
-            city, 
-            region, 
-            zip)
+            role)
 
-            VALUES (?,?,?,?,?,?,?,?,?,?)`;
+            VALUES (?,?,?,?,?,?,?)`;
+
+            var role 
+            if(!data.role){
+                role = 'client';
+                data.role = role;
+            }else{
+                role = data.role
+            }
+
 
             this.inserts  = [
             `${data.name}`,
@@ -142,27 +170,26 @@ export class AuthModel{
             `${data.email}`,
             `${data.telephone}`,
             `${data.password}`,
-            `${data.role}`,
-            `${data.city}`,
-            `${data.region}`,
-            `${data.zip}`];
+            `${data.role}`];
 
-            if(!data.role){
-                data.role = 'client';
-            }
+
 
             this.Query = MySQL.instance.cnn.format(this.Query,this.inserts );
-            let result:any = await MySQL.executeQuery(this.Query);
+            var result:any = await MySQL.executeQuery(this.Query);
 
             if(result.constructor.name === "OkPacket"){
                 this.Query = `SELECT * FROM users WHERE email = '${data.email}'`;
-                let result:any = await MySQL.executeQuery(this.Query);
+                result = await MySQL.executeQuery(this.Query);
+                
+                this.Query = `INSERT INTO address_users(users_id, address_id) VALUES ('${result[0].id}','${ rows.insertId}')`;
+                await MySQL.executeQuery(this.Query);
+
                 delete result[0].password;
 
                 return res.status(200).json({
                     ok:true,
                     user: {
-                        role: result[0].role,
+                        role,
                         id: result[0].id,
                         status: result[0].status,
                         name: result[0].name,
@@ -184,7 +211,7 @@ export class AuthModel{
         }
     }
 
-    static async valEmail(data:DataI){
+    static async valEmail(data:any){
 
 
         this.Query= `SELECT email FROM users WHERE email= '${data.email}'`;
@@ -199,7 +226,7 @@ export class AuthModel{
 
     }
 
-    static async valTel(data:DataI){
+    static async valTel(data:any){
 
         this.Query= `SELECT telephone FROM users WHERE telephone= '${data.telephone}'`;
         let resultT:any = await MySQL.executeQuery(this.Query);
@@ -210,7 +237,7 @@ export class AuthModel{
        }
     }
 
-    static async changePassword(oldPass:string,newPass:string,res:ResponseI){
+    static async changePassword(oldPass:string,newPass:string,res:any){
         const { userId } = res.locals.jwtPayload;
 
         this.Query = `SELECT password FROM users WHERE id = '${userId}'`;
@@ -240,7 +267,7 @@ export class AuthModel{
         
     }
 
-    static async forgortPassword(email:string,res:ResponseI){
+    static async forgortPassword(email:string,res:any){
         
         const message = 'Check your email for a link to reset your password';
 
@@ -303,7 +330,7 @@ export class AuthModel{
         });
     }
 
-    static async createNewPassword(resetToken:string, newPassword: string,res:ResponseI){
+    static async createNewPassword(resetToken:string, newPassword: string,res:any){
 
 
         try{

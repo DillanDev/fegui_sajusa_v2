@@ -114,6 +114,26 @@ class AuthModel {
                         });
                     }
                 }
+                //Creando una dirección
+                this.Query = `INSERT INTO 
+
+            address(
+            calle, 
+            country, 
+            state, 
+            city, 
+            zip) 
+
+            VALUES (?,?,?,?,?)`;
+                this.inserts = [
+                    `${data.calle}`,
+                    `${data.country}`,
+                    `${data.state}`,
+                    `${data.city}`,
+                    `${data.zip}`
+                ];
+                this.Query = connection_1.default.instance.cnn.format(this.Query, this.inserts);
+                rows = yield connection_1.default.executeQuery(this.Query);
                 data.password = yield bcrypt_1.default.hash(data.password, 10);
                 this.Query = `
             INSERT INTO
@@ -125,12 +145,17 @@ class AuthModel {
             email,
             telephone, 
             password, 
-            role, 
-            city, 
-            region, 
-            zip)
+            role)
 
-            VALUES (?,?,?,?,?,?,?,?,?,?)`;
+            VALUES (?,?,?,?,?,?,?)`;
+                var role;
+                if (!data.role) {
+                    role = 'client';
+                    data.role = role;
+                }
+                else {
+                    role = data.role;
+                }
                 this.inserts = [
                     `${data.name}`,
                     `${data.surname}`,
@@ -138,24 +163,20 @@ class AuthModel {
                     `${data.email}`,
                     `${data.telephone}`,
                     `${data.password}`,
-                    `${data.role}`,
-                    `${data.city}`,
-                    `${data.region}`,
-                    `${data.zip}`
+                    `${data.role}`
                 ];
-                if (!data.role) {
-                    data.role = 'client';
-                }
                 this.Query = connection_1.default.instance.cnn.format(this.Query, this.inserts);
-                let result = yield connection_1.default.executeQuery(this.Query);
+                var result = yield connection_1.default.executeQuery(this.Query);
                 if (result.constructor.name === "OkPacket") {
                     this.Query = `SELECT * FROM users WHERE email = '${data.email}'`;
-                    let result = yield connection_1.default.executeQuery(this.Query);
+                    result = yield connection_1.default.executeQuery(this.Query);
+                    this.Query = `INSERT INTO address_users(users_id, address_id) VALUES ('${result[0].id}','${rows.insertId}')`;
+                    yield connection_1.default.executeQuery(this.Query);
                     delete result[0].password;
                     return res.status(200).json({
                         ok: true,
                         user: {
-                            role: result[0].role,
+                            role,
                             id: result[0].id,
                             status: result[0].status,
                             name: result[0].name,

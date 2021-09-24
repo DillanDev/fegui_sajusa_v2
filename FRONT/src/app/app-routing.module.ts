@@ -29,9 +29,9 @@ const routes: Routes = [
   {path:'contacto',component: ContactComponent},
   {path:'categorias/:id',component: CategoriesComponent},
   {path:'producto/:id',component: ProductsComponent },
+  {path:'admin/login', component: LoginComponent},
+  {path:'admin/dashboard', component: DashboardComponent},
   {path:'admin', redirectTo: 'admin/login',pathMatch: 'full'},
-  {path:'admin/login',component: LoginComponent},
-  {path:'admin/dashboard',component: DashboardComponent},
   {path: '**', component: NotFoundComponent}
 ];
 

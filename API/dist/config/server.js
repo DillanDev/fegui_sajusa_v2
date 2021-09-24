@@ -22,7 +22,7 @@ class App {
     constructor(port) {
         this.port = port;
         this.route = new routes_1.Route();
-        this.app = express_1.default();
+        this.app = (0, express_1.default)();
         this.settings();
         this.middlewares();
         this.routes();
@@ -33,9 +33,9 @@ class App {
     middlewares() {
         this.app.use(express_1.default.json());
         this.app.use(express_1.default.urlencoded({ extended: false }));
-        this.app.use(express_fileupload_1.default());
-        this.app.use(cors_1.default());
-        this.app.use(morgan_1.default('tiny'));
+        this.app.use((0, express_fileupload_1.default)());
+        this.app.use((0, cors_1.default)());
+        this.app.use((0, morgan_1.default)('tiny'));
     }
     routes() {
         this.route.AuthRoutes.routes(this.app);

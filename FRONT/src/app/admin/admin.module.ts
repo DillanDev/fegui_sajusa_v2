@@ -1,14 +1,18 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LoginComponent } from './pages/login/login.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { LoginComponent } from './pages/login/login.component';
+import { SlidingMenuComponent } from './components/sliding-menu/sliding-menu.component';
+
 
 
 
 @NgModule({
   declarations: [
-    LoginComponent,
-    DashboardComponent
+  
+    DashboardComponent,
+       LoginComponent,
+       SlidingMenuComponent
   ],
   imports: [
     CommonModule

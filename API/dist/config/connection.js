@@ -18,7 +18,7 @@ const dotenv_1 = require("dotenv");
 class MySQL {
     constructor() {
         this.connect = false;
-        dotenv_1.config();
+        (0, dotenv_1.config)();
         this.cnn = mysql_1.default.createConnection({
             host: process.env.DATABASE_HOST || 'localhost',
             user: process.env.DATABASE_USER || 'root',

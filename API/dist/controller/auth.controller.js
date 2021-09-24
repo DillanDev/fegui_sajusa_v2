@@ -33,7 +33,7 @@ class Auth {
     register(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                if (!validation_1.createUsersValidation(req.body)) {
+                if (!(0, validation_1.createUsersValidation)(req.body)) {
                     return res.status(406).json({
                         ok: false,
                         message: 'Data invalid!'
@@ -79,7 +79,7 @@ class Auth {
                         message: 'Email is required!'
                     });
                 }
-                if (!validation_1.forgortPasswordValidation(email)) {
+                if (!(0, validation_1.forgortPasswordValidation)(email)) {
                     return res.status(406).json({
                         ok: false,
                         message: 'Data invalid!'
