@@ -9,14 +9,22 @@ export class ShoppingRoute{
 
     public routes(app:Application){
 
+        //User
         //cart
         app.get('/fegui_sajusa/api/v2/user/:id/cart',[userJWT],  this.shoppingController.cart );
         app.post('/fegui_sajusa/api/v2/user/:ID/product/:id/add-cart',[userJWT],  this.shoppingController.addCart );
         app.patch('/fegui_sajusa/api/v2/user/:ID/update-cart/:id',[userJWT],  this.shoppingController.updateCart );
         app.delete('/fegui_sajusa/api/v2/user/:ID/delete-cart/:id',[userJWT],  this.shoppingController.deleteCart );
-    
-        //Get shopping
-        //app.get('/fegui_sajusa/api/v2/user/:id/cart',[userJWT],  this.userController.user );
+        //Mostrar detalle de la compra
+        //Mostrar facturacion
+
+        //Admin
+
+        //Costo de envio por libra
+        //mostrar cuantas ventas
+
+
+
 
 
     }

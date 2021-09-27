@@ -14,62 +14,75 @@ export class AuthModel{
     static inserts =[''];
 
     static async login(data:any,res:any){
+        try {
+            const {email,password} = data;
 
-         const {email,password} = data;
+            this.Query = `SELECT status FROM users WHERE email = '${email}'`;
+            var rows:any =await MySQL.executeQuery(this.Query);
+            if(!rows[0]) return res.status(404).json({ok:false,message:'User not found!'})
 
-         this.Query = `SELECT status FROM users WHERE email = '${email}'`;
-         var rows:any =await MySQL.executeQuery(this.Query);
-         if(rows[0].status==='disabled') return res.status(404).json({ok:false,message:'User disabled!'})
-
-
-         this.Query = `SELECT * FROM users WHERE email = '${email}' AND status = 'active'`;
-         rows =await MySQL.executeQuery(this.Query);
-
-
-
-         if(!rows[0]){
-
-            return  res.status(406).json({
-                        ok:false,
-                        message: 'Email or password invalid'
-                     });
-         }
-
-         this.Query = `SELECT password FROM users WHERE email = '${email}' AND status = 'active'`;
-         rows =  await MySQL.executeQuery(this.Query);
-         const pass_hash = bcrypt.compareSync(password,rows[0].password);
-
-
-         if(pass_hash==false){
-
-            return res.status(406).json({
-                        ok:false,
-                        message: 'Email or password invalid'
-                     });
-
-         }else if(pass_hash == true){
-            this.Query = `SELECT * FROM users WHERE email = '${email}' AND status = 'active'`;
+            this.Query = `SELECT status FROM users WHERE email = '${email}'`;
             rows =await MySQL.executeQuery(this.Query);
+            if(rows[0].status==='disabled') return res.status(404).json({ok:false,message:'User disabled!'})
 
-            if(rows[0].role == 'admin'){
 
-                const token = jwt.sign({userId:rows[0].id,username:rows[0].name,role:rows[0].role},key.jwtSecret,{expiresIn: '1h'});
-                return res.status(200).json({
-                        ok:true,
-                        id: rows[0].id,
-                        token
-                     });
 
-            }else if(rows[0].role == 'client'){
-                const token = jwt.sign({userId:rows[0].id,username:rows[0].name,role:rows[0].role},key.jwtSecret);
-                return res.status(200).json({
-                        ok:true,
-                        id: rows[0].id,
-                        token
-                     });
+
+             this.Query = `SELECT * FROM users WHERE email = '${email}' AND status = 'active'`;
+             rows =await MySQL.executeQuery(this.Query);
+
+
+
+             if(!rows[0]){
+
+                return  res.status(406).json({
+                            ok:false,
+                            message: 'Email or password invalid'
+                         });
+             }
+
+             this.Query = `SELECT password FROM users WHERE email = '${email}' AND status = 'active'`;
+             rows =  await MySQL.executeQuery(this.Query);
+             const pass_hash = bcrypt.compareSync(password,rows[0].password);
+
+
+             if(pass_hash==false){
+
+                return res.status(406).json({
+                            ok:false,
+                            message: 'Email or password invalid'
+                         });
+
+             }else if(pass_hash == true){
+                this.Query = `SELECT * FROM users WHERE email = '${email}' AND status = 'active'`;
+                rows =await MySQL.executeQuery(this.Query);
+
+                if(rows[0].role == 'admin'){
+
+                    const token = jwt.sign({userId:rows[0].id,username:rows[0].name,role:rows[0].role},key.jwtSecret,{expiresIn: '1h'});
+                    return res.status(200).json({
+                            ok:true,
+                            id: rows[0].id,
+                            token
+                         });
+
+                }else if(rows[0].role == 'client'){
+                    const token = jwt.sign({userId:rows[0].id,username:rows[0].name,role:rows[0].role},key.jwtSecret);
+                    return res.status(200).json({
+                            ok:true,
+                            id: rows[0].id,
+                            token
+                         });
+                }
+
+
             }
 
-
+        } catch (error) {
+            return res.status(400).json({
+                ok:false, 
+                message: 'Bad query!'
+            });
         }
 
     }
@@ -138,12 +151,13 @@ export class AuthModel{
 
             this.Query = MySQL.instance.cnn.format(this.Query,this.inserts );
             rows = await MySQL.executeQuery(this.Query);
-
+            
             data.password = await bcrypt.hash(data.password,10);
             this.Query =`
             INSERT INTO
 
             users(
+            address_id,
             name, 
             surname, 
             gender, 
@@ -152,7 +166,7 @@ export class AuthModel{
             password, 
             role)
 
-            VALUES (?,?,?,?,?,?,?)`;
+            VALUES (?,?,?,?,?,?,?,?)`;
 
             var role 
             if(!data.role){
@@ -164,6 +178,7 @@ export class AuthModel{
 
 
             this.inserts  = [
+            `${rows.insertId}`,
             `${data.name}`,
             `${data.surname}`,
             `${data.gender}`,
@@ -173,16 +188,12 @@ export class AuthModel{
             `${data.role}`];
 
 
-
             this.Query = MySQL.instance.cnn.format(this.Query,this.inserts );
             var result:any = await MySQL.executeQuery(this.Query);
 
             if(result.constructor.name === "OkPacket"){
                 this.Query = `SELECT * FROM users WHERE email = '${data.email}'`;
                 result = await MySQL.executeQuery(this.Query);
-                
-                this.Query = `INSERT INTO address_users(users_id, address_id) VALUES ('${result[0].id}','${ rows.insertId}')`;
-                await MySQL.executeQuery(this.Query);
 
                 delete result[0].password;
 
@@ -198,9 +209,6 @@ export class AuthModel{
                     }
                 });
             }
-                
-        
-            
 
 
         } catch (error) {

@@ -8,13 +8,17 @@ class ShoppingRoute {
         this.shoppingController = new shopping_controller_1.ShoppingController();
     }
     routes(app) {
+        //User
         //cart
         app.get('/fegui_sajusa/api/v2/user/:id/cart', [auth_1.userJWT], this.shoppingController.cart);
         app.post('/fegui_sajusa/api/v2/user/:ID/product/:id/add-cart', [auth_1.userJWT], this.shoppingController.addCart);
         app.patch('/fegui_sajusa/api/v2/user/:ID/update-cart/:id', [auth_1.userJWT], this.shoppingController.updateCart);
         app.delete('/fegui_sajusa/api/v2/user/:ID/delete-cart/:id', [auth_1.userJWT], this.shoppingController.deleteCart);
-        //Get shopping
-        //app.get('/fegui_sajusa/api/v2/user/:id/cart',[userJWT],  this.userController.user );
+        //Mostrar detalle de la compra
+        //Mostrar facturacion
+        //Admin
+        //Costo de envio por libra
+        //mostrar cuantas ventas
     }
 }
 exports.ShoppingRoute = ShoppingRoute;

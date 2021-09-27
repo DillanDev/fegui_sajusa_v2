@@ -40,47 +40,59 @@ const key_users_1 = __importDefault(require("../config/key-users"));
 class AuthModel {
     static login(data, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email, password } = data;
-            this.Query = `SELECT status FROM users WHERE email = '${email}'`;
-            var rows = yield connection_1.default.executeQuery(this.Query);
-            if (rows[0].status === 'disabled')
-                return res.status(404).json({ ok: false, message: 'User disabled!' });
-            this.Query = `SELECT * FROM users WHERE email = '${email}' AND status = 'active'`;
-            rows = yield connection_1.default.executeQuery(this.Query);
-            if (!rows[0]) {
-                return res.status(406).json({
-                    ok: false,
-                    message: 'Email or password invalid'
-                });
-            }
-            this.Query = `SELECT password FROM users WHERE email = '${email}' AND status = 'active'`;
-            rows = yield connection_1.default.executeQuery(this.Query);
-            const pass_hash = bcrypt_1.default.compareSync(password, rows[0].password);
-            if (pass_hash == false) {
-                return res.status(406).json({
-                    ok: false,
-                    message: 'Email or password invalid'
-                });
-            }
-            else if (pass_hash == true) {
+            try {
+                const { email, password } = data;
+                this.Query = `SELECT status FROM users WHERE email = '${email}'`;
+                var rows = yield connection_1.default.executeQuery(this.Query);
+                if (!rows[0])
+                    return res.status(404).json({ ok: false, message: 'User not found!' });
+                this.Query = `SELECT status FROM users WHERE email = '${email}'`;
+                rows = yield connection_1.default.executeQuery(this.Query);
+                if (rows[0].status === 'disabled')
+                    return res.status(404).json({ ok: false, message: 'User disabled!' });
                 this.Query = `SELECT * FROM users WHERE email = '${email}' AND status = 'active'`;
                 rows = yield connection_1.default.executeQuery(this.Query);
-                if (rows[0].role == 'admin') {
-                    const token = jwt.sign({ userId: rows[0].id, username: rows[0].name, role: rows[0].role }, key_users_1.default.jwtSecret, { expiresIn: '1h' });
-                    return res.status(200).json({
-                        ok: true,
-                        id: rows[0].id,
-                        token
+                if (!rows[0]) {
+                    return res.status(406).json({
+                        ok: false,
+                        message: 'Email or password invalid'
                     });
                 }
-                else if (rows[0].role == 'client') {
-                    const token = jwt.sign({ userId: rows[0].id, username: rows[0].name, role: rows[0].role }, key_users_1.default.jwtSecret);
-                    return res.status(200).json({
-                        ok: true,
-                        id: rows[0].id,
-                        token
+                this.Query = `SELECT password FROM users WHERE email = '${email}' AND status = 'active'`;
+                rows = yield connection_1.default.executeQuery(this.Query);
+                const pass_hash = bcrypt_1.default.compareSync(password, rows[0].password);
+                if (pass_hash == false) {
+                    return res.status(406).json({
+                        ok: false,
+                        message: 'Email or password invalid'
                     });
                 }
+                else if (pass_hash == true) {
+                    this.Query = `SELECT * FROM users WHERE email = '${email}' AND status = 'active'`;
+                    rows = yield connection_1.default.executeQuery(this.Query);
+                    if (rows[0].role == 'admin') {
+                        const token = jwt.sign({ userId: rows[0].id, username: rows[0].name, role: rows[0].role }, key_users_1.default.jwtSecret, { expiresIn: '1h' });
+                        return res.status(200).json({
+                            ok: true,
+                            id: rows[0].id,
+                            token
+                        });
+                    }
+                    else if (rows[0].role == 'client') {
+                        const token = jwt.sign({ userId: rows[0].id, username: rows[0].name, role: rows[0].role }, key_users_1.default.jwtSecret);
+                        return res.status(200).json({
+                            ok: true,
+                            id: rows[0].id,
+                            token
+                        });
+                    }
+                }
+            }
+            catch (error) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Bad query!'
+                });
             }
         });
     }
@@ -139,6 +151,7 @@ class AuthModel {
             INSERT INTO
 
             users(
+            address_id,
             name, 
             surname, 
             gender, 
@@ -147,7 +160,7 @@ class AuthModel {
             password, 
             role)
 
-            VALUES (?,?,?,?,?,?,?)`;
+            VALUES (?,?,?,?,?,?,?,?)`;
                 var role;
                 if (!data.role) {
                     role = 'client';
@@ -157,6 +170,7 @@ class AuthModel {
                     role = data.role;
                 }
                 this.inserts = [
+                    `${rows.insertId}`,
                     `${data.name}`,
                     `${data.surname}`,
                     `${data.gender}`,
@@ -170,8 +184,6 @@ class AuthModel {
                 if (result.constructor.name === "OkPacket") {
                     this.Query = `SELECT * FROM users WHERE email = '${data.email}'`;
                     result = yield connection_1.default.executeQuery(this.Query);
-                    this.Query = `INSERT INTO address_users(users_id, address_id) VALUES ('${result[0].id}','${rows.insertId}')`;
-                    yield connection_1.default.executeQuery(this.Query);
                     delete result[0].password;
                     return res.status(200).json({
                         ok: true,
