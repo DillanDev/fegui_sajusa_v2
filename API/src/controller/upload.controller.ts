@@ -60,4 +60,33 @@ export class UploadController{
     }
 
     
+    public async show(req:Request, res:Response){
+
+        try {
+
+            await MODEL.show(req,res);
+
+        } catch (error) {
+            res.status(500).json({
+                ok:false,
+                message:"Error calling function"
+            });
+        }    
+    }
+
+
+    public async delete(req:Request, res:Response){
+
+        try {
+
+            await MODEL.delete(req,res);
+
+        } catch (error) {
+            res.status(500).json({
+                ok:false,
+                message:"Error calling function"
+            });
+        }    
+
+    }
 }

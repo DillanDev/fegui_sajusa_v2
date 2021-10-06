@@ -87,4 +87,43 @@ export class UploadModel{
         }
     }
 
+    public async show(req:any, res:any){
+        let tipo = req.params.tipe;
+        let img = req.params.img;
+
+        let pathImagen = path.resolve(__dirname,`../../uploads/${tipo}/${img}`);
+
+        if(fs.existsSync(pathImagen)){
+            res.sendFile(pathImagen);
+        }else{
+            let noImagePath = path.resolve(__dirname,`../../uploads/no_image.jpg `)
+            res.sendFile(noImagePath);
+        }
+    }
+
+
+    public async delete(req:any,res:any){
+
+        let tipe = req.params.tipe;
+        let name = req.params.img;
+
+        
+
+        this.Query = `DELETE FROM images WHERE image = "${name}"`;
+        let result: any = await MySQL.executeQuery(this.Query); 
+        this.borraArchivo(name, tipe);
+
+        if(result.constructor.name === 'OkPacket'){
+            return res.status(200).json({
+                ok:true,
+                message: 'Image delete!'
+            });
+        }
+
+
+        
+
+    }
+
+
 }

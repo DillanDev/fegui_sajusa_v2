@@ -68,6 +68,7 @@ class ProductModel {
                         this.Query = `SELECT * FROM images`;
                         this.result = yield connection_1.default.executeQuery(this.Query);
                         let images = new Array(this.result.length - 1);
+                        images = [];
                         for (let _ in products) {
                             this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[_].id}'`;
                             this.result = yield connection_1.default.executeQuery(this.Query);
@@ -75,8 +76,7 @@ class ProductModel {
                                 this.Query = `SELECT id,image FROM images WHERE id = '${this.result[__].images_id}'`;
                                 this.aux = yield connection_1.default.executeQuery(this.Query);
                                 //Insertando el dato
-                                images[this.cont - 1] = { products_id: products[_].id, id: this.aux[0].id, image: this.aux[0].image };
-                                this.cont = this.cont + 1;
+                                images[_] = { products_id: products[_].id, id: this.aux[0].id, image: this.aux[0].image };
                             }
                         }
                         return res.status(200).json({
@@ -124,7 +124,7 @@ class ProductModel {
                 let limit = Number(req.query.limit);
                 let _page = page * limit - limit;
                 //Contador
-                this.Query = `SELECT * FROM products WHERE  name LIKE '%${req.params.name}%'`;
+                this.Query = `SELECT * FROM products WHERE  name LIKE '%${req.params.name}%' LIMIT ${limit} OFFSET ${_page}`;
                 let result = yield connection_1.default.executeQuery(this.Query);
                 let cont = 0;
                 for (let _ in result)
@@ -132,7 +132,14 @@ class ProductModel {
                 let products = result;
                 this.Query = `SELECT * FROM images`;
                 this.result = yield connection_1.default.executeQuery(this.Query);
-                let images = new Array(this.result.length - 1);
+                var images;
+                if (limit > cont) {
+                    images = new Array(cont - 1);
+                }
+                else {
+                    images = new Array(limit - 1);
+                }
+                images = [];
                 for (let _ in products) {
                     this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[_].id}'`;
                     this.result = yield connection_1.default.executeQuery(this.Query);
@@ -140,8 +147,7 @@ class ProductModel {
                         this.Query = `SELECT id,image FROM images WHERE id = '${this.result[__].images_id}'`;
                         this.aux = yield connection_1.default.executeQuery(this.Query);
                         //Insertando el dato
-                        images[this.cont - 1] = { products_id: products[_].id, id: this.aux[0].id, image: this.aux[0].image };
-                        this.cont = this.cont + 1;
+                        images[__] = { products_id: products[_].id, id: this.aux[0].id, image: this.aux[0].image };
                     }
                 }
                 this.Query = `SELECT * FROM products WHERE name LIKE '%${req.params.name}%' LIMIT ${limit} OFFSET ${_page}`;
@@ -175,18 +181,18 @@ class ProductModel {
                     this.result = yield connection_1.default.executeQuery(this.Query);
                     this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[0].id}'`;
                     this.result = yield connection_1.default.executeQuery(this.Query);
-                    let images = new Array(this.result.length);
+                    var images = new Array(this.result.length - 1);
+                    images = [];
                     for (let _ in this.result) {
                         this.Query = `SELECT id,image FROM images WHERE id = '${this.result[_].images_id}'`;
                         this.aux = yield connection_1.default.executeQuery(this.Query);
                         //Insertando el dato
-                        images[this.cont] = { products_id: products[0].id, id: this.aux[0].id, image: this.aux[0].image };
-                        this.cont = this.cont + 1;
+                        images[_] = { products_id: products[0].id, id: this.aux[0].id, image: this.aux[0].image };
                     }
                     return res.status(200).json({
                         ok: true,
                         products: _products,
-                        images: images
+                        images
                     });
                 }
                 else {
@@ -219,15 +225,16 @@ class ProductModel {
                 for (let i = 0; i <= 3; i++) {
                     array[i] = Math.trunc(this.random(1, cont));
                 }
-                for (let _ in array) {
-                    this.Query = `SELECT * FROM products LIMIT ${array[_]},1 `;
+                for (let i = 0; i < 4; i++) {
+                    this.Query = `SELECT * FROM products LIMIT ${array[i]},1 `;
                     this.result = yield connection_1.default.executeQuery(this.Query);
-                    array[_] = this.result[0];
+                    array[i] = this.result[0];
                 }
                 let products = array;
                 if (array.length > 0) {
                     var contAux = 0;
                     let _images = new Array(4);
+                    _images = [];
                     for (let i = 0; i < 4; i++) {
                         this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[i].id}'`;
                         this.result = yield connection_1.default.executeQuery(this.Query);

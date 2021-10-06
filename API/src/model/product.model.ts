@@ -73,18 +73,23 @@ export class ProductModel{
                     this.result = await MySQL.executeQuery(this.Query);
                     let images: any = new Array(this.result.length-1);
 
+                    images = [];
+
                     for(let _ in products){
                         this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[_].id}'`;
                         this.result = await MySQL.executeQuery(this.Query);
 
 
                         for(let __ in this.result){
+
+
                             this.Query = `SELECT id,image FROM images WHERE id = '${this.result[__].images_id}'`;
                             this.aux = await MySQL.executeQuery(this.Query);
                             //Insertando el dato
-                            images[this.cont-1] =  { products_id: products[_].id, id: this.aux[0].id, image: this.aux[0].image};
 
-                            this.cont = this.cont + 1
+                            images[_] =  { products_id: products[_].id, id: this.aux[0].id, image: this.aux[0].image};
+                            
+                            
 
 
                         }
@@ -136,7 +141,7 @@ export class ProductModel{
             let _page = page*limit-limit
 
             //Contador
-            this.Query = `SELECT * FROM products WHERE  name LIKE '%${req.params.name}%'`;
+            this.Query = `SELECT * FROM products WHERE  name LIKE '%${req.params.name}%' LIMIT ${limit} OFFSET ${_page}`;
             let result:any = await MySQL.executeQuery(this.Query); 
             let cont = 0
             for(let _ in result ) cont = cont + 1;
@@ -146,20 +151,28 @@ export class ProductModel{
 
             this.Query = `SELECT * FROM images`;
             this.result = await MySQL.executeQuery(this.Query);
-            let images: any = new Array(this.result.length-1);
 
+            var images: any;
+            if(limit > cont){
+               images = new Array(cont-1);
+            }else{
+                images = new Array(limit-1);
+            }
+
+            
+            images = [];
             for(let _ in products){
                 this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[_].id}'`;
                 this.result = await MySQL.executeQuery(this.Query);
 
+                
 
                 for(let __ in this.result){
                     this.Query = `SELECT id,image FROM images WHERE id = '${this.result[__].images_id}'`;
                     this.aux = await MySQL.executeQuery(this.Query);
                     //Insertando el dato
-                    images[this.cont-1] =  { products_id: products[_].id, id: this.aux[0].id, image: this.aux[0].image};
 
-                    this.cont = this.cont + 1
+                    images[__] =  { products_id: products[_].id, id: this.aux[0].id, image: this.aux[0].image};
 
 
                 }
@@ -202,21 +215,23 @@ export class ProductModel{
 
                 this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[0].id}'`;
                 this.result = await MySQL.executeQuery(this.Query);
-                let images: any = new Array(this.result.length);
 
+
+                var images: any = new Array(this.result.length-1);
+                images = [];
                 for(let _ in this.result){
+
                     this.Query = `SELECT id,image FROM images WHERE id = '${this.result[_].images_id}'`;
                     this.aux = await MySQL.executeQuery(this.Query);
                     //Insertando el dato
-                    images[this.cont] =  { products_id: products[0].id, id: this.aux[0].id, image: this.aux[0].image};
-                    this.cont = this.cont + 1
+                    images[_] =  { products_id: products[0].id, id: this.aux[0].id, image: this.aux[0].image};
 
                 }
 
                 return res.status(200).json({
                     ok:true,
                     products:_products,
-                    images: images
+                    images
                 });
             }else{
                 return res.status(404).json({
@@ -251,12 +266,12 @@ export class ProductModel{
                 array[i] = Math.trunc(this.random(1,cont));
             }
 
+            for(let i= 0; i<4;i++){
 
-            for(let _ in array){
-
-                this.Query = `SELECT * FROM products LIMIT ${array[_]},1 `;
+                this.Query = `SELECT * FROM products LIMIT ${array[i]},1 `;
                 this.result = await MySQL.executeQuery(this.Query); 
-                array[_] = this.result[0];
+                array[i] = this.result[0];
+
             }
                 
             let products:any = array;
@@ -266,8 +281,9 @@ export class ProductModel{
                 var contAux= 0;
 
                 let _images: any = new Array(4);
+                _images = [];
 
-                 for(let i = 0; i< 4; i++){           
+                for(let i = 0; i< 4; i++){           
                     this.Query = `SELECT images_id FROM products_images WHERE products_id = '${products[i].id}'`;
                     this.result = await MySQL.executeQuery(this.Query);
                     _images[i] = this.result[0].images_id

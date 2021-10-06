@@ -90,5 +90,34 @@ class UploadModel {
             fs_1.default.unlinkSync(pathImagen);
         }
     }
+    show(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let tipo = req.params.tipe;
+            let img = req.params.img;
+            let pathImagen = path_1.default.resolve(__dirname, `../../uploads/${tipo}/${img}`);
+            if (fs_1.default.existsSync(pathImagen)) {
+                res.sendFile(pathImagen);
+            }
+            else {
+                let noImagePath = path_1.default.resolve(__dirname, `../../uploads/no_image.jpg `);
+                res.sendFile(noImagePath);
+            }
+        });
+    }
+    delete(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let tipe = req.params.tipe;
+            let name = req.params.img;
+            this.Query = `DELETE FROM images WHERE image = "${name}"`;
+            let result = yield connection_1.default.executeQuery(this.Query);
+            this.borraArchivo(name, tipe);
+            if (result.constructor.name === 'OkPacket') {
+                return res.status(200).json({
+                    ok: true,
+                    message: 'Image delete!'
+                });
+            }
+        });
+    }
 }
 exports.UploadModel = UploadModel;

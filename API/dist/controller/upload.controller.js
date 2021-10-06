@@ -55,5 +55,31 @@ class UploadController {
             });
         });
     }
+    show(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield MODEL.show(req, res);
+            }
+            catch (error) {
+                res.status(500).json({
+                    ok: false,
+                    message: "Error calling function"
+                });
+            }
+        });
+    }
+    delete(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield MODEL.delete(req, res);
+            }
+            catch (error) {
+                res.status(500).json({
+                    ok: false,
+                    message: "Error calling function"
+                });
+            }
+        });
+    }
 }
 exports.UploadController = UploadController;

@@ -15,7 +15,9 @@ class ShoppingRoute {
         app.patch('/fegui_sajusa/api/v2/user/:ID/update-cart/:id', [auth_1.userJWT], this.shoppingController.updateCart);
         app.delete('/fegui_sajusa/api/v2/user/:ID/delete-cart/:id', [auth_1.userJWT], this.shoppingController.deleteCart);
         //Mostrar detalle de la compra
+        app.get('/fegui_sajusa/api/v2/user/:id/detail', [auth_1.userJWT], this.shoppingController.cart);
         //Mostrar facturacion
+        app.get('/fegui_sajusa/api/v2/user/:id/invoice', [auth_1.userJWT], this.shoppingController.cart);
         //Admin
         //Costo de envio por libra
         //mostrar cuantas ventas
