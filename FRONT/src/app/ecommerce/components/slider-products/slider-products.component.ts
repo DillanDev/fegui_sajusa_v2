@@ -42,42 +42,30 @@ export class SliderProductsComponent implements OnInit {
  
   products =[
           {
-            id: '2312343434',
-            title: "Producto 1",
-            img: "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/river-island-tienda-espan-a-1502873334.jpg?crop=0.8xw:1xh;center,top&resize=480:*",
-            price: "999",
-            desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
-          },{
             id: '2312343435',
-            title: "Producto 2",
-            img: "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/river-island-tienda-espan-a-1502873334.jpg?crop=0.8xw:1xh;center,top&resize=480:*",
-            price: "999",
+            title: "Cubre Calzado",
+            img: "../../../../../../assets/img/medicobotas.jpg",
+            price: "88",
             desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
           },
           {
             id: '2312343434',
-            title: "Producto 3",
-            img: "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/river-island-tienda-espan-a-1502873334.jpg?crop=0.8xw:1xh;center,top&resize=480:*",
-            price: "999",
+            title: "Receptor de Orina",
+            img: "../../../../../../assets/img/ORIMENS.jpg",
+            price: "189",
             desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
           },{
             id: '2312343435',
-            title: "Producto 4",
-            img: "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/river-island-tienda-espan-a-1502873334.jpg?crop=0.8xw:1xh;center,top&resize=480:*",
-            price: "999",
+            title: "Orinal Urinal Femenino",
+            img: "../../../../../../assets/img/orinal.jpg",
+            price: "80",
             desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
           },
           {
             id: '2312343434',
-            title: "Producto 3",
-            img: "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/river-island-tienda-espan-a-1502873334.jpg?crop=0.8xw:1xh;center,top&resize=480:*",
-            price: "999",
-            desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
-          },{
-            id: '2312343435',
-            title: "Producto 4",
-            img: "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/river-island-tienda-espan-a-1502873334.jpg?crop=0.8xw:1xh;center,top&resize=480:*",
-            price: "999",
+            title: "Cubre Calzado",
+            img: "../../../../../../assets/img/botafarmacia.jpg",
+            price: "88",
             desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
           }
         ]
